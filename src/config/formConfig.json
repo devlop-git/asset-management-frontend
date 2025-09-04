@@ -1,0 +1,182 @@
+{
+  "title": "User Registration Form",
+  "description": "Please fill out the form below to register a new user account.",
+  "fields": [
+    {
+      "id": "firstName",
+      "type": "text",
+      "label": "TAG no/ Demand ID",
+      "placeholder": "Enter your TAG no/ Demand ID",
+      "required": true,
+      "validation": {
+        "minLength": 2,
+        "maxLength": 50
+      }
+    },
+    {
+      "id": "lastName",
+      "type": "text",
+      "label": "Certificate type",
+      "placeholder": "Enter your Certificate type",
+      "required": true,
+      "validation": {
+        "minLength": 2,
+        "maxLength": 50
+      }
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "label": "Certificate No",
+      "placeholder": "Enter your Certificate No",
+      "required": true,
+      "validation": {
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+      }
+    },
+    {
+      "id": "phone",
+      "type": "tel",
+      "label": "Stone Type",
+      "placeholder": "Enter your Stone Type",
+      "required": false,
+      "validation": {
+        "pattern": "^[+]?[1-9]?[0-9]{7,15}$"
+      }
+    },
+    {
+      "id": "country",
+      "type": "select",
+      "label": "Shape",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select a shape" },
+        { "value": "us", "label": "United States" },
+        { "value": "ca", "label": "Canada" },
+        { "value": "uk", "label": "United Kingdom" },
+        { "value": "de", "label": "Germany" },
+        { "value": "fr", "label": "France" },
+        { "value": "jp", "label": "Japan" },
+        { "value": "au", "label": "Australia" }
+      ]
+    },
+    {
+      "id": "department",
+      "type": "select",
+      "label": "Carat (Avg Wt)",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select a department" },
+        { "value": "engineering", "label": "Engineering" },
+        { "value": "marketing", "label": "Marketing" },
+        { "value": "sales", "label": "Sales" },
+        { "value": "hr", "label": "Human Resources" },
+        { "value": "finance", "label": "Finance" }
+      ]
+    },
+    {
+      "id": "experience",
+      "type": "select",
+      "label": "Color",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Color",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Clarity",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Cut",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Polish",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Symmetry",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Fluorescence",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    },
+     {
+      "id": "experience",
+      "type": "select",
+      "label": "Intensity",
+      "required": true,
+      "options": [
+        { "value": "", "label": "Select experience level" },
+        { "value": "0-1", "label": "0-1 years" },
+        { "value": "2-5", "label": "2-5 years" },
+        { "value": "6-10", "label": "6-10 years" },
+        { "value": "10+", "label": "10+ years" }
+      ]
+    }
+  ]
+}
