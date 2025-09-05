@@ -12,8 +12,9 @@ export default function Layout({ children }) {
   };
 
   const navigation = [
-    { name: 'Search', href: '/', current: location.pathname === '/' },
-    { name: 'Form', href: '/detail', current: location.pathname === '/detail' },
+    { name: 'Stock List', href: '/', current: location.pathname === '/' },
+    // { name: 'Form', href: '/detail', current: location.pathname === '/detail' },
+    // { name: 'Detail', href: '/detail/:idd', current: location.pathname === '/detail' },
   ];
 
   if (isAuthenticated) {

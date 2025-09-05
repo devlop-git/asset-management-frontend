@@ -1,33 +1,63 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from "react";
+import api from "../api/axiosClient";
+import { useNavigate } from "react-router-dom";
+import FormPage from "./FormPage";
 
-// Mock data for the table
-const mockData = Array.from({ length: 100 }, (_, i) => ({
-  id: i + 1,
-  name: `User ${i + 1}`,
-  email: `user${i + 1}@example.com`,
-  status: Math.random() > 0.5 ? 'Active' : 'Inactive',
-  role: ['Admin', 'User', 'Moderator'][Math.floor(Math.random() * 3)],
-  createdAt: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString()
-}));
+const PAGE_SIZE = 50;
 
 export default function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showFilter, setShowFilter] = useState(false);
+  const [datasource, setDatasource] = useState([]);
+  const navigate = useNavigate();
 
-  const filteredData = useMemo(() => {
-    return mockData.filter(item => 
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await api.get(
+          `stonedata/search?page=${currentPage}&pageSize=${PAGE_SIZE}`
+        );
+        const rows = response?.data?.data ?? response?.data ?? [];
+        // setTotalPages(response?.data?.totalPages)
+        setDatasource(Array.isArray(rows) ? rows : []);
+        console.log(response, rows);
+      } catch (ex) {
+        alert(ex);
+      }
+    })();
+  }, [itemsPerPage]);
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+
+  // const filteredData = useMemo(() => {
+  //   return mockData.filter(item =>
+  //     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     item.role.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
+  // }, [searchTerm]);
+
+  const totalPages = Math.ceil(datasource.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = datasource.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleSearch = () => {
+  const headingList = useMemo(() => {
+    if (!datasource || datasource.length === 0) return [];
+    return Object.keys(datasource[0]);
+  }, [datasource]);
+
+  const handleSearch = async (data) => {
+    console.log(data);
+    try {
+      const response = await api.get(
+        `stonedata/stone-details?certificate_no=${searchTerm}`
+      );
+      console.log(response);
+    } catch (ex) {
+      alert(ex);
+    }
     setCurrentPage(1); // Reset to first page when searching
   };
 
@@ -44,43 +74,82 @@ export default function SearchPage() {
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="flex flex-row justify-between">
-          <div className="relative w-[50%]">
-            <label className="block mb-2 text-sm font-medium text-gray-900 ">Certificate Type</label>
-            <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-              {/* <option selected>Choose a country</option> */}
-            
-              <option value="lab">Lab</option>
-              <option value="natural">Natural</option>
-            </select>
-          </div>
-
-          <div className=" relative mb-6 w-[50%] ml-[10%]">
-          <label className="block mb-2 text-sm font-medium ">Certificate Number</label>
-            <input 
-              type="search" 
-              id="search" 
-              className="block w-[50%] p-4 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+          <div className=" relative mb-6 w-[50%]">
+            <label className="block mb-2 text-sm font-medium ">
+              Certificate Number
+            </label>
+            <input
+              type="search"
+              id="search"
+              // className="block w-[50%] p-4 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
               value={searchTerm}
+              className="form-input block w-[50%]"
+              placeholder="Enter certificate Number"
               onChange={(e) => setSearchTerm(e.target.value)}
-              required />
-        
-            <button 
-              type="submit" 
+              required
+            />
+
+            <button
+              type="submit"
               className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              onClick={handleSearch}>
-                Search
+              onClick={handleSearch}
+            >
+              Search
             </button>
           </div>
-          </div>
-        
-        
+        </div>
+
+        <div
+          id="accordion-flush"
+          data-accordion="collapse"
+          data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          data-inactive-classes="text-gray-500"
+        >
+          <h2 id="accordion-flush-heading-1">
+            <button
+              type="button"
+              onClick={() => setShowFilter(!showFilter)}
+              className="flex items-center justify-between w-full py-5 font-medium cursor-pointer border-b border-gray-200 dark:border-gray-700 gap-3"
+              data-accordion-target="#accordion-flush-body-1"
+              aria-expanded="true"
+              aria-controls="accordion-flush-body-1"
+            >
+              <span>Filter</span>
+              <svg
+                data-accordion-icon
+                className="w-3 h-3 rotate-180 shrink-0"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 10 6"
+              >
+                <path stroke="currentColor" d="M9 5 5 1 1 5" />
+              </svg>
+            </button>
+          </h2>
+          {showFilter && (
+            <div
+              id="accordion-flush-body-1"
+              aria-labelledby="accordion-flush-heading-1"
+            >
+              <div className="py-5 border-b border-gray-200 dark:border-gray-700 mb-3">
+                {/* <p className="mb-2 text-gray-500 dark:text-gray-400">
+                  Filters will be showing here.
+                </p> */}
+                <FormPage onFilter={handleSearch} />
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Results Info */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 mt-4">
           <p className="text-gray-600">
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
+            Showing {datasource.length === 0 ? 0 : startIndex + 1}-
+            {Math.min(startIndex + itemsPerPage, datasource.length)} of{" "}
+            {datasource.length} results
           </p>
-          
+
           <div className="flex items-center space-x-2">
             <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
               Per page:
@@ -105,56 +174,62 @@ export default function SearchPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
+                  Action
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
+                {headingList.map((item, index) => (
+                  <th
+                    key={index}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {item}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-150">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.id}
+              {paginatedData.map((row, rowIndex) => (
+                <tr
+                  key={row?.id ?? rowIndex}
+                  className="hover:bg-gray-50 transition-colors duration-150"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/detail/${row.CertificateNo}`, {state: {certificateNo: row.CertificateNo}})}
+                      className="text-black-600 hover:text-blue-800"
+                      title="View"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                      </svg>
+                    </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {item.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                      item.role === 'Moderator' ? 'bg-blue-100 text-blue-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {item.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.createdAt}
-                  </td>
+                  {headingList.map((colKey) => (
+                    <td
+                      key={colKey}
+                      className="px-4 py-2 whitespace-nowrap text-sm text-gray-900"
+                    >
+                      {String(row?.[colKey] ?? "")}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
@@ -183,7 +258,7 @@ export default function SearchPage() {
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of{' '}
+                  Page <span className="font-medium">{currentPage}</span> of{" "}
                   <span className="font-medium">{totalPages}</span>
                 </p>
               </div>
@@ -196,7 +271,7 @@ export default function SearchPage() {
                   >
                     Previous
                   </button>
-                  
+
                   {/* Page numbers */}
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNumber;
@@ -209,22 +284,22 @@ export default function SearchPage() {
                     } else {
                       pageNumber = currentPage - 2 + i;
                     }
-                    
+
                     return (
                       <button
                         key={pageNumber}
                         onClick={() => handlePageChange(pageNumber)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors duration-200 ${
                           currentPage === pageNumber
-                            ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                            ? "z-10 bg-primary-50 border-primary-500 text-primary-600"
+                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                         }`}
                       >
                         {pageNumber}
                       </button>
                     );
                   })}
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}

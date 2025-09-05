@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import formConfig from '../config/formConfig.json';
 
-export default function FormPage() {
+export default function FormPage(props) {
+  
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { 
     register, 
@@ -14,6 +15,7 @@ export default function FormPage() {
   const onSubmit = (data) => {
     console.log('Form data:', data);
     setIsSubmitted(true);
+    props.onFilter(data);
     setTimeout(() => {
       setIsSubmitted(false);
       reset();
@@ -41,24 +43,12 @@ export default function FormPage() {
     };
 
     switch (field.type) {
-      case 'text':
-      case 'email':
-      case 'tel':
+      case 'text':     
         return (
           <input
             type={field.type}
             placeholder={field.placeholder}
             className={`form-input ${errors[field.id] ? 'border-red-500' : ''}`}
-            {...fieldProps}
-          />
-        );
-
-      case 'textarea':
-        return (
-          <textarea
-            placeholder={field.placeholder}
-            rows={4}
-            className={`form-input resize-none ${errors[field.id] ? 'border-red-500' : ''}`}
             {...fieldProps}
           />
         );
@@ -75,20 +65,6 @@ export default function FormPage() {
               </option>
             ))}
           </select>
-        );
-
-      case 'checkbox':
-        return (
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              {...fieldProps}
-            />
-            <label htmlFor={field.id} className="ml-2 block text-sm text-gray-900">
-              {field.label}
-            </label>
-          </div>
         );
 
       default:
@@ -109,14 +85,16 @@ export default function FormPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto">
       <div className="bg-white p-8 rounded-lg shadow-sm">
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{formConfig.title}</h1>
           <p className="text-gray-600">{formConfig.description}</p>
-        </div>
+        </div> */}
+       
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">       
+          
           {formConfig.fields.map((field) => (
             <div key={field.id}>
               {field.type !== 'checkbox' && (
@@ -126,20 +104,20 @@ export default function FormPage() {
                 </label>
               )}
               
-              {renderField(field)}
+              {renderField(field)}    
               
-              {errors[field.id] && (
+              {/* {errors[field.id] && (
                 <p className="mt-1 text-sm text-red-600">{errors[field.id].message}</p>
-              )}
+              )} */}
             </div>
           ))}
 
-          <div className="pt-4">
+          <div className="pt-8">
             <button
               type="submit"
               className="text-white end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
-              Submit
+              Filter
             </button>
           </div>
         </form>
