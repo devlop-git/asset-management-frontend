@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import api from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import FormPage from "./FormPage";
+import { toastError, toastSuccess } from "../utils/toast";
 
 const PAGE_SIZE = 50;
 
@@ -54,9 +55,10 @@ export default function SearchPage() {
       const response = await api.get(
         `stonedata/stone-details?certificate_no=${searchTerm}`
       );
+      toastSuccess('Data fetched successfully')
       console.log(response);
     } catch (ex) {
-      alert(ex);
+      toastError(ex);
     }
     setCurrentPage(1); // Reset to first page when searching
   };

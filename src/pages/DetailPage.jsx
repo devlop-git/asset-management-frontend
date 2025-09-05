@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosClient";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { toastError } from "../utils/toast";
 
 const DetailRow = ({ label, value }) => (
   <div className="flex flex-col">
@@ -13,26 +14,28 @@ const DetailRow = ({ label, value }) => (
 
 const DetailPage = () => {
   const { state } = useLocation();
+  const {id} = useParams();
   const [datasource, setDatasource] = useState({});
   const [showImage, setShowImage] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
 
   useEffect(() => {
+    const payload = id || state?.certificateNo;
     (async () => {
       try {
         const { data } = await api.get(
-          `stonedata/stone-details?certificate_no=${state.certificateNo}`
+          `stonedata/stone-details?certificate_no=${payload}`
         );
-        console.log("detail--", data);
         setDatasource(data);
       } catch (ex) {
-        alert(ex);
+        toastError(ex || 'Something went wrong');
       }
     })();
-  }, [state?.certificateNo]);
+  }, []);
 
-  if (!datasource.id && <p>Loading...</p>) console.log(datasource);
+  console.log(datasource);
+
   return (
     <div className="mx-auto">
       <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -104,12 +107,12 @@ const DetailPage = () => {
                   accept="image/*"
                 />
                 <a
-                  href="https://storage.googleapis.com/nj_assets/image/12345678923.png"
+                  href={datasource?.image_url}
                   target="_blank"
                   className="h-60 w-80 mt-4"
                 >
                   <img
-                    src="https://storage.googleapis.com/nj_assets/image/12345678923.png"
+                    src={datasource?.image_url}
                     alt="diamond"
                     className="h-60 w-80 mt-4"
                   />
@@ -163,7 +166,7 @@ const DetailPage = () => {
                 />
                 <video width="450" height="500" controls className="mt-2">
                   <source
-                    src="https://storage.googleapis.com/nj_assets/videos/719550425.mp4"
+                    src={datasource?.video_url}
                     type="video/mp4"
                   />
                 </video>
@@ -218,7 +221,7 @@ const DetailPage = () => {
                   />
                 </div>
                 <a
-                  href="https://pdf.igi.org/FDR726548899.pdf"
+                  href={datasource?.cert_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 underline pl-2"
