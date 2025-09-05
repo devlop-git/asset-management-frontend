@@ -14,11 +14,12 @@ const DetailRow = ({ label, value }) => (
 
 const DetailPage = () => {
   const { state } = useLocation();
-  const {id} = useParams();
+  const { id } = useParams();
   const [datasource, setDatasource] = useState({});
   const [showImage, setShowImage] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
+
 
   useEffect(() => {
     const payload = id || state?.certificateNo;
@@ -34,7 +35,46 @@ const DetailPage = () => {
     })();
   }, []);
 
-  console.log(datasource);
+  async function uploadMedia(type, file) {
+    const formdata = new FormData();
+    formdata.append('media', file);
+    formdata.append('type', type); // images, videos, pdf
+    formdata.append('diamond_code', datasource.certificate_no);
+    formdata.append('stone_id', datasource.id);
+
+    try {
+      const { data } = await api.post(
+        `stonedata/upload-media`,
+        formdata,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      toastSuccess(data?.message);
+    } catch (err) {
+      toastError(err || 'Something went wrong');
+    }
+
+  }
+
+  const uploadImage = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      uploadMedia('images', file);
+      // for preview purpose only
+      const imageUrl = URL.createObjectURL(file);
+      setDatasource((prev) => ({ ...prev, image_url: imageUrl }));
+    }
+  }
+  const uploadVideo = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      uploadMedia('videos', file);
+      // for preview purpose only
+      const videoUrl = URL.createObjectURL(file);
+      setDatasource((prev) => ({ ...prev, video_url: videoUrl }));
+    }
+  }
 
   return (
     <div className="mx-auto">
@@ -105,6 +145,7 @@ const DetailPage = () => {
                   id="file_input"
                   type="file"
                   accept="image/*"
+                  onChange={uploadImage}
                 />
                 <a
                   href={datasource?.image_url}
@@ -163,6 +204,7 @@ const DetailPage = () => {
                   id="file_input"
                   type="file"
                   accept="video/mp4,video/x-m4v,video/*"
+                  onChange={uploadVideo}
                 />
                 <video width="450" height="500" controls className="mt-2">
                   <source

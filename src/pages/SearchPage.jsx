@@ -53,8 +53,10 @@ export default function SearchPage() {
     console.log(data);
     try {
       const response = await api.get(
-        `stonedata/stone-details?certificate_no=${searchTerm}`
+        `stonedata/search?certificate_no=${searchTerm}`
       );
+         const rows = response?.data?.data ?? response?.data ?? [];
+       setDatasource(Array.isArray(rows) ? rows : []);
       toastSuccess('Data fetched successfully')
       console.log(response);
     } catch (ex) {
