@@ -88,8 +88,8 @@ export default function SearchPage() {
     setFilters((prev) => ({ ...prev, ...(updatedValues || {}) }));
   };
 
-  const handleApplyFilters = async () => {
-    const mergedFilters = { ...filters };
+  const handleApplyFilters = async (formValues) => {
+    const mergedFilters = { ...(formValues || {}) };
     setFilters(mergedFilters);
     setCurrentPage(1);
     await executeSearch({ term: searchTerm, activeFilters: mergedFilters });
