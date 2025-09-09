@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axiosClient";
 import { useLocation, useParams } from "react-router-dom";
 import { toastError } from "../utils/toast";
+import { toastSuccess } from './../utils/toast';
 
 const DetailRow = ({ label, value }) => (
   <div className="flex flex-col">
@@ -30,7 +31,7 @@ const DetailPage = () => {
         );
         setDatasource(data);
       } catch (ex) {
-        toastError(ex || 'Something went wrong');
+        toastError(ex.message || 'Something went wrong');
       }
     })();
   }, []);
@@ -52,7 +53,7 @@ const DetailPage = () => {
       );
       toastSuccess(data?.message);
     } catch (err) {
-      toastError(err || 'Something went wrong');
+      toastError(err.message || 'Something went wrong');
     }
 
   }

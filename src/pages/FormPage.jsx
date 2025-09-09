@@ -1,10 +1,99 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import formConfig from '../config/formConfig.json';
 
 export default function FormPage(props) {
+  const { onFilter, onFilterChange, filterData} = props;
   
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const formConfig = {
+    fields: [
+      {
+        id: "tagNo",
+        type: "text",
+        label: "TAG no/ Demand ID",
+        placeholder: "Enter your TAG no/ Demand ID"
+      },
+      {
+        id: "certificateType",
+        type: "select",
+        label: "Certificate Type",
+        placeholder: "Enter your Certificate type",
+        options: filterData.certificateType
+      },
+      {
+        id: "stoneType",
+        type: "select",
+        label: "Stone Type",
+        placeholder: "Enter your Stone Type",
+        options: filterData.stoneType,
+      },
+      {
+        id: "shape",
+        type: "select",
+        label: "Shape",
+        required: false,
+        options: filterData.shape
+      },
+      // {
+      //   "id": "carat",
+      //   "type": "select",
+      //   "label": "Carat (Avg Wt)",
+      //   "options": [
+      //     { "value": "", "label": "Select a department" },
+      //     { "value": "engineering", "label": "Engineering" },
+      //   ]
+      // },
+      {
+        id: "color",
+        type: "select",
+        label: "Color",
+        required: false,
+        options: filterData.color
+      },
+      {
+        id: "clarity",
+        type: "select",
+        label: "Clarity",
+        required: false,
+        options: filterData.clarity
+      },
+      {
+        id: "cut",
+        type: "select",
+        label: "Cut",
+        required: false,
+        options: filterData.cut
+      },
+      {
+        id: "polish",
+        type: "select",
+        label: "Polish",
+        required: false,
+        options: filterData.polish
+      },
+      {
+        id: "symmetry",
+        type: "select",
+        label: "Symmetry",
+        required: false,
+        options: filterData.symmetry
+      },
+      {
+        id: "fluorescence",
+        type: "select",
+        label: "Fluorescence",
+        required: false,
+        options: filterData.fluorescence
+      },
+      // {
+      //   "id": "intensity",
+      //   "type": "select",
+      //   "label": "Intensity",
+      //   "required": false,
+      //   "options": filterData.intensity
+      // }
+    ]
+}
+
+  // removed submit success UI state, fetching happens on button click
   const { 
     register, 
     handleSubmit, 
@@ -13,13 +102,21 @@ export default function FormPage(props) {
   } = useForm();
 
   const onSubmit = (data) => {
-    console.log('Form data:', data);
-    setIsSubmitted(true);
-    props.onFilter(data);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      reset();
-    }, 3000);
+    if (onFilterChange) {
+      onFilterChange(data);
+    }
+    if (onFilter) {
+      onFilter();
+    }
+    reset();
+  };
+
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    if (onFilterChange) {
+      onFilterChange({ [name]: value });
+    }
   };
 
   const renderField = (field) => {
@@ -27,14 +124,7 @@ export default function FormPage(props) {
       id: field.id,
       ...register(field.id, {
         required: field.required ? `${field.label} is required` : false,
-        minLength: field.validation?.minLength ? {
-          value: field.validation.minLength,
-          message: `Minimum length is ${field.validation.minLength} characters`
-        } : undefined,
-        maxLength: field.validation?.maxLength ? {
-          value: field.validation.maxLength,
-          message: `Maximum length is ${field.validation.maxLength} characters`
-        } : undefined,
+        name: field.id,
         pattern: field.validation?.pattern ? {
           value: new RegExp(field.validation.pattern),
           message: `Please enter a valid ${field.label.toLowerCase()}`
@@ -50,6 +140,7 @@ export default function FormPage(props) {
             placeholder={field.placeholder}
             className={`form-input ${errors[field.id] ? 'border-red-500' : ''}`}
             {...fieldProps}
+            onChange={handleChange}
           />
         );
 
@@ -58,10 +149,12 @@ export default function FormPage(props) {
           <select
             className={`form-select ${errors[field.id] ? 'border-red-500' : ''}`}
             {...fieldProps}
+            onChange={handleChange}
           >
-            {field.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+            <option value="">All</option>
+            {(field.options || []).map((option) => (
+              <option key={option} value={option}>
+                {option}
               </option>
             ))}
           </select>
@@ -72,17 +165,17 @@ export default function FormPage(props) {
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-          <div className="text-green-600 text-4xl mb-4">✓</div>
-          <h2 className="text-xl font-semibold text-green-800 mb-2">Form Submitted Successfully!</h2>
-          <p className="text-green-700">Thank you for your submission. The form will reset shortly.</p>
-        </div>
-      </div>
-    );
-  }
+  // if (isSubmitted) {
+  //   return (
+  //     <div className="max-w-2xl mx-auto">
+  //       <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+  //         <div className="text-green-600 text-4xl mb-4">✓</div>
+  //         <h2 className="text-xl font-semibold text-green-800 mb-2">Form Submitted Successfully!</h2>
+  //         <p className="text-green-700">Thank you for your submission. The form will reset shortly.</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="mx-auto">
@@ -116,6 +209,7 @@ export default function FormPage(props) {
             <button
               type="submit"
               className="text-white end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              onClick={onFilter}
             >
               Filter
             </button>

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import FormPage from "./FormPage";
 import { toastError, toastSuccess } from "../utils/toast";
 
-const PAGE_SIZE = 50;
+// const PAGE_SIZE = 50; // pagination handled client-side for now
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,24 +12,54 @@ export default function SearchPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showFilter, setShowFilter] = useState(false);
   const [datasource, setDatasource] = useState([]);
+  const [filteredData, setFilterData] = useState({});
+  const [filters, setFilters] = useState({});
   const navigate = useNavigate();
+  
 
+  // No URL param syncing; state is internal only
+
+  // Initial fetch on load (once)
   useEffect(() => {
+    executeSearch({ term: "", activeFilters: {} });
+  }, []);
+
+  // Manual search executor (called only on button clicks)
+  const executeSearch = async ({ term, activeFilters }) => {
+    try {
+      const queryParts = [];
+      if (term) queryParts.push(`certificate_no=${term}`);
+      Object.entries(activeFilters || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          queryParts.push(`${key}=${String(value)}`);
+        }
+      });
+      const url = queryParts.length > 0
+        ? `stonedata/search?${queryParts.join("&")}`
+        : `stonedata/search`;
+      const response = await api.get(url);
+      const rows = response?.data?.data ?? response?.data ?? [];
+      setDatasource(Array.isArray(rows) ? rows : []);
+      toastSuccess('Data fetched successfully');
+    } catch (ex) {
+      toastError(ex.message || 'Something went wrong');
+    }
+  };
+
+  // filter dropdown data
+  useEffect(() => { 
     (async () => {
       try {
         const response = await api.get(
-          `stonedata/search?page=${currentPage}&pageSize=${PAGE_SIZE}`
+          'stonedata/filterData'
         );
-        const rows = response?.data?.data ?? response?.data ?? [];
-        // setTotalPages(response?.data?.totalPages)
-        setDatasource(Array.isArray(rows) ? rows : []);
-        console.log(response, rows);
+        const filterData = response?.data || {};
+        setFilterData(filterData);
       } catch (ex) {
-        alert(ex);
+        toastError(ex.message || 'Something went wrong');
       }
     })();
-  }, [itemsPerPage]);
-
+  }, []);
 
 
   // const filteredData = useMemo(() => {
@@ -49,20 +79,20 @@ export default function SearchPage() {
     return Object.keys(datasource[0]);
   }, [datasource]);
 
-  const handleSearch = async (data) => {
-    console.log(data);
-    try {
-      const response = await api.get(
-        `stonedata/search?certificate_no=${searchTerm}`
-      );
-         const rows = response?.data?.data ?? response?.data ?? [];
-       setDatasource(Array.isArray(rows) ? rows : []);
-      toastSuccess('Data fetched successfully')
-      console.log(response);
-    } catch (ex) {
-      toastError(ex);
-    }
-    setCurrentPage(1); // Reset to first page when searching
+  const handleSearch = async () => {
+    setCurrentPage(1);
+    await executeSearch({ term: searchTerm, activeFilters: filters });
+  };
+
+  const handleFilterChange = (updatedValues) => {
+    setFilters((prev) => ({ ...prev, ...(updatedValues || {}) }));
+  };
+
+  const handleApplyFilters = async () => {
+    const mergedFilters = { ...filters };
+    setFilters(mergedFilters);
+    setCurrentPage(1);
+    await executeSearch({ term: searchTerm, activeFilters: mergedFilters });
   };
 
   const handlePageChange = (page) => {
@@ -140,7 +170,7 @@ export default function SearchPage() {
                 {/* <p className="mb-2 text-gray-500 dark:text-gray-400">
                   Filters will be showing here.
                 </p> */}
-                <FormPage onFilter={handleSearch} />
+                <FormPage onFilter={handleApplyFilters} onFilterChange={handleFilterChange} filterData={filteredData} />
               </div>
             </div>
           )}
