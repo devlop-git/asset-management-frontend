@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { toastError} from '../utils/toast';
+import api from '../api/axiosClient';
 
 const AuthContext = createContext();
 
@@ -25,18 +27,64 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     // Simulate API call
-    if (email === 'admin@example.com' && password === 'password') {
-      const userData = { 
-        id: 1, 
-        email: 'admin@example.com', 
-        name: 'Admin User',
-        role: 'admin'
-      };
-      setUser(userData);
+    const payload = {email, password}
+    try {
+      const response = await api.post('/auth/login', payload, { skipAuthRedirect: true });
+      const data = response?.data || {};
+
+      // Expect API to return at least a token and user object
+      const token = data.access_token;
+      const userData = data.user;
+
+      if (!token || !userData) {
+        return { success: false, message: 'Invalid response from server' };
+      }
+
+      // Persist and set user
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+
       return { success: true };
-    } else {
-      return { success: false, message: 'Invalid credentials' };
+    } catch(ex){
+      toastError(ex.message || 'Invalid email or password');
+      return { success: false, message: ex.message };
+    }
+  };
+
+//   {
+//     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoic2hpbHdhbnRhLmd1cHRhQG5hdmdyYWhhYS5jb20iLCJpYXQiOjE3NTc0OTc0OTAsImV4cCI6MTc1NzU4Mzg5MH0.-WbZutuU3QaHSGAp-t1qb8yNwhysHSScaBDgmWspz20",
+//     "user": {
+//         "id": 6,
+//         "name": "Shilwanta Gupta",
+//         "email": "shilwanta.gupta@navgrahaa.com"
+//     }
+// }
+
+  const register = async (email, name, password) => {
+    // Simulate API call
+    const payload = {email, name, password}
+    try {
+      const response = await api.post('/auth/register', payload, { skipAuthRedirect: true });
+      const data = response?.data || {};
+
+      // Expect API to return at least a token and user object
+      const token = data.access_token;
+      const userData = data.user;
+
+      if (!token || !userData) {
+        return { success: false, message: 'Invalid response from server' };
+      }
+
+      // Persist and set user
+      // localStorage.setItem('token', token);
+      // localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+
+      return { success: true };
+    } catch(ex){
+      toastError(ex.message || 'Invalid email or password');
+      return { success: false, message: ex.message };
     }
   };
 
@@ -50,6 +98,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     loading,
+    register,
     isAuthenticated: !!user
   };
 

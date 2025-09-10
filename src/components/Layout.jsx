@@ -12,13 +12,13 @@ export default function Layout({ children }) {
   };
 
   const navigation = [
-    { name: 'Stock List', href: '/', current: location.pathname === '/' },
+    // { name: 'Register', href: '/signup', current: location.pathname === '/detail' },
     // { name: 'Form', href: '/detail', current: location.pathname === '/detail' },
     // { name: 'Detail', href: '/detail/:idd', current: location.pathname === '/detail' },
   ];
-
+  
   if (isAuthenticated) {
-    navigation.push({ name: 'Admin', href: '/admin', current: location.pathname === '/admin' });
+    navigation.push({ name: 'Admin', href: '/admin', current: location.pathname === '/admin' }, { name: 'Stock List', href: '/stock', current: location.pathname === '/stock' });
   }
 
   return (
@@ -60,7 +60,7 @@ export default function Layout({ children }) {
                   </button>
                 </div>
               ) : (
-                <Link to="/login" className="btn-primary text-sm">
+                <Link to="/" className="btn-primary text-sm">
                   Admin Login
                 </Link>
               )}

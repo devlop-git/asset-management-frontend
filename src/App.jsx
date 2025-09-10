@@ -9,18 +9,19 @@ import SearchPage from './pages/SearchPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import DetailPage from './pages/DetailPage';
+import Register from './pages/Register';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/signup" element={<Register />} />
           <Route path="/*" element={
             <Layout>
               <Routes>
-                <Route path="/" element={<SearchPage />} />
-                {/* <Route path="/detail" element={<FormPage />} /> */}
+                <Route path="/stock" element={<SearchPage />} />
                 <Route path="/detail/:id" element={<DetailPage />} />
                 <Route path="/admin" element={
                   <ProtectedRoute>

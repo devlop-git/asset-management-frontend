@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function LoginPage() {
+export default function Register() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   if (isAuthenticated) {
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const result = await login(email, password);
+    const result = await register(email, name, password);
     
     if (result.success) {
       navigate('/admin');
@@ -34,11 +35,11 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Sign in to your account
+            Sign Up here
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          {/* <p className="mt-2 text-center text-sm text-gray-600">
             Use admin@example.com / password to login
-          </p>
+          </p> */}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -56,6 +57,22 @@ export default function LoginPage() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="name"
+                autoComplete="name"
+                required
+                className="form-input mt-1"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
@@ -87,10 +104,10 @@ export default function LoginPage() {
             disabled={loading}
             className="text-white end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Signing up...' : 'Sign up'}
           </button>
         </form>
-          <Link to='/signup' className='text-blue-700'>New user?</Link>
+          <Link to='/' className='text-blue-700'>Already a user?</Link>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import api from "../api/axiosClient";
 import { useLocation, useParams } from "react-router-dom";
 import { toastError } from "../utils/toast";
 import { toastSuccess } from './../utils/toast';
+import Spinner from "../components/Spinner";
 
 const DetailRow = ({ label, value }) => (
   <div className="flex flex-col">
@@ -75,18 +76,19 @@ const DetailPage = () => {
       const videoUrl = URL.createObjectURL(file);
       setDatasource((prev) => ({ ...prev, video_url: videoUrl }));
     }
-  }
+  } 
 
+  if(!datasource.tag_no) return <Spinner />
   return (
     <div className="mx-auto">
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Diamond Asset Management
+            Stock detail
           </h1>
-          <p className="text-gray-600">
+          {/* <p className="text-gray-600">
             Here the description of diamond certificate
-          </p>
+          </p> */}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
           <DetailRow label="TAG No / Demand ID" value={datasource?.tag_no} />

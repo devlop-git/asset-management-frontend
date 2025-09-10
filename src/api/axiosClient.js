@@ -44,7 +44,8 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
-    if (status === 401) {
+    const skipAuthRedirect = error?.config?.skipAuthRedirect;
+    if (status === 401 && !skipAuthRedirect) {
       // Clear token and redirect to login
       setAuthToken(null);
       // Optional: preserve current path to return after login
