@@ -27,9 +27,11 @@ const DetailPage = () => {
     const payload = id || state?.certificateNo;
     (async () => {
       try {
-        const { data } = await api.get(
+        const response = await api.get(
           `stonedata/stone-details?certificate_no=${payload}`
         );
+        const { data, success, message } = response?.data || {};
+        if (!success) throw new Error(message || 'Failed to fetch details');
         setDatasource(data);
       } catch (ex) {
         toastError(ex.message || 'Something went wrong');
@@ -45,14 +47,16 @@ const DetailPage = () => {
     formdata.append('stone_id', datasource.id);
 
     try {
-      const { data } = await api.post(
+      const response = await api.post(
         `stonedata/upload-media`,
         formdata,
         {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      toastSuccess(data?.message);
+      const { success, message } = response?.data || {};
+      if (!success) throw new Error(message || 'Upload failed');
+      toastSuccess(message || 'Uploaded');
     } catch (err) {
       toastError(err.message || 'Something went wrong');
     }

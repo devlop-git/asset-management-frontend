@@ -30,11 +30,16 @@ export function AuthProvider({ children }) {
     const payload = {email, password}
     try {
       const response = await api.post('/auth/login', payload, { skipAuthRedirect: true });
-      const data = response?.data || {};
+      const { data, success, message } = response?.data || {};
 
-      // Expect API to return at least a token and user object
-      const token = data.access_token;
-      const userData = data.user;
+      if (!success) {
+        toastError(message || 'Invalid email or password');
+        return { success: false, message };
+      }
+
+      // Expect API data to include token and user
+      const token = data?.access_token;
+      const userData = data?.user;
 
       if (!token || !userData) {
         return { success: false, message: 'Invalid response from server' };
@@ -66,11 +71,16 @@ export function AuthProvider({ children }) {
     const payload = {email, name, password}
     try {
       const response = await api.post('/auth/register', payload, { skipAuthRedirect: true });
-      const data = response?.data || {};
+      const { data, success, message } = response?.data || {};
 
-      // Expect API to return at least a token and user object
-      const token = data.access_token;
-      const userData = data.user;
+      if (!success) {
+        toastError(message || 'Registration failed');
+        return { success: false, message };
+      }
+
+      // Expect API data to include token and user
+      const token = data?.access_token;
+      const userData = data?.user;
 
       if (!token || !userData) {
         return { success: false, message: 'Invalid response from server' };

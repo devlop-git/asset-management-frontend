@@ -16,9 +16,6 @@ export default function SearchPage() {
   const [filters, setFilters] = useState({});
   const navigate = useNavigate();
   
-
-  // No URL param syncing; state is internal only
-
   // Initial fetch on load (once)
   useEffect(() => {
     executeSearch({ term: "", activeFilters: {} });
@@ -38,7 +35,9 @@ export default function SearchPage() {
         ? `stonedata/search?${queryParts.join("&")}`
         : `stonedata/search`;
       const response = await api.get(url);
-      const rows = response?.data?.data ?? response?.data ?? [];
+      const { data, success, message } = response?.data || {};
+      const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+      if (!success) throw new Error(message || 'Failed to fetch data');
       setDatasource(Array.isArray(rows) ? rows : []);
       toastSuccess('Data fetched successfully');
     } catch (ex) {
@@ -53,22 +52,15 @@ export default function SearchPage() {
         const response = await api.get(
           'stonedata/filterData'
         );
-        const filterData = response?.data || {};
+        const { data, success } = response?.data || {};
+        const filterData = data || {};
+        if (!success) return;
         setFilterData(filterData);
       } catch (ex) {
         toastError(ex.message || 'Something went wrong');
       }
     })();
   }, []);
-
-
-  // const filteredData = useMemo(() => {
-  //   return mockData.filter(item =>
-  //     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     item.role.toLowerCase().includes(searchTerm.toLowerCase())
-  //   );
-  // }, [searchTerm]);
 
   const totalPages = Math.ceil(datasource.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;

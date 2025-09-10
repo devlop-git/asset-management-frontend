@@ -41,7 +41,27 @@ axiosClient.interceptors.request.use(
 
 // Response interceptor: normalize errors and handle 401
 axiosClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Normalize success shape to { data, message, success }
+    const raw = response?.data;
+    let normalized;
+    if (raw && typeof raw === 'object' && 'success' in raw && 'data' in raw) {
+      normalized = {
+        data: raw.data,
+        message: raw.message ?? '',
+        success: Boolean(raw.success),
+      };
+    } else {
+      normalized = {
+        data: raw,
+        message: raw?.message ?? '',
+        success: true,
+      };
+    }
+    // Keep axios response shape, but set data to normalized model
+    response.data = normalized;
+    return response;
+  },
   (error) => {
     const status = error?.response?.status;
     const skipAuthRedirect = error?.config?.skipAuthRedirect;
@@ -62,7 +82,8 @@ axiosClient.interceptors.response.use(
         error?.response?.data?.message ||
         error?.message ||
         'Unexpected error, please try again.',
-      data: error?.response?.data,
+      data: error?.response?.data?.data ?? null,
+      success: false,
       url: error?.config?.url,
       method: error?.config?.method,
     };
