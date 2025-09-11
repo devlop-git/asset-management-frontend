@@ -10,6 +10,7 @@ import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import DetailPage from './pages/DetailPage';
 import Register from './pages/Register';
+import ErrorPage from './pages/ErrorPage';
 
 function App() {
   return (
@@ -18,19 +19,26 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/signup" element={<Register />} />
-          <Route path="/*" element={
+          <Route path="/error-400" element={<ErrorPage />} />
+          <Route path="/stock" element={
             <Layout>
-              <Routes>
-                <Route path="/stock" element={<SearchPage />} />
-                <Route path="/detail/:id" element={<DetailPage />} />
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <AdminPage />
-                  </ProtectedRoute>
-                } />
-              </Routes>
+              <SearchPage />
             </Layout>
           } />
+          <Route path="/detail/:id" element={
+            <Layout>
+              <DetailPage />
+            </Layout>
+          } />
+          <Route path="/admin" element={
+            <Layout>
+              <ProtectedRoute>
+                <AdminPage />
+              </ProtectedRoute>
+            </Layout>
+          } />
+          {/* Catch-all route for unmatched paths */}
+          <Route path="*" element={<ErrorPage />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
       </Router>

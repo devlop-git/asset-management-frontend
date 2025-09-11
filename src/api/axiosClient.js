@@ -65,6 +65,15 @@ axiosClient.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     const skipAuthRedirect = error?.config?.skipAuthRedirect;
+    
+    // Handle 400+ status codes by redirecting to error page
+    if (status >= 400 && status !== 401) {
+      const errorMessage = error?.response?.data?.message || error?.message || 'An error occurred';
+      const errorUrl = `/error-400?code=${status}&message=${encodeURIComponent(errorMessage)}`;
+      window.location.replace(errorUrl);
+      return Promise.reject(error);
+    }
+    
     if (status === 401 && !skipAuthRedirect) {
       // Clear token and redirect to login
       setAuthToken(null);

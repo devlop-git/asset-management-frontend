@@ -45,7 +45,7 @@ export default function Layout({ children }) {
       <aside className={`fixed inset-y-0 left-0 z-40 ${sidebarWidthClass} bg-white border-r border-gray-200 shadow-sm transition-all duration-300 hidden sm:flex flex-col`}>
         <div className="h-16 flex items-center px-3 justify-between">
           <div className="flex items-center space-x-2">
-            <img src="/logo.png" alt="Logo" className={isSidebarOpen ? 'w-40 h-5' : 'w-8 h-5'} />
+            <img src="/logo.png" alt="Logo" className={isSidebarOpen ? 'w-45 h-5' : 'w-8 h-5'} />
           </div>
           <button
             onClick={() => setIsSidebarOpen((v) => !v)}

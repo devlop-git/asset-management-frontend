@@ -110,176 +110,70 @@ const DetailPage = () => {
           <DetailRow label="Fluorescence" value={datasource.fluorescence} />
           <DetailRow label="Intensity" value={datasource.intensity} />
         </div>
-
-        {/* upload image */}
-        <div
-          id="accordion-flush"
-          data-accordion="collapse"
-          data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          data-inactive-classes="text-gray-500"
-        >
-          <h2 id="accordion-flush-heading-1">
-            <button
-              type="button"
-              onClick={() => setShowImage(!showImage)}
-              className="flex items-center justify-between w-full py-5 font-medium cursor-pointer border-b border-gray-200 dark:border-gray-700 gap-3"
-              data-accordion-target="#accordion-flush-body-1"
-              aria-expanded="true"
-              aria-controls="accordion-flush-body-1"
-            >
-              <span>Upload Image</span>
-              <svg
-                data-accordion-icon
-                className="w-3 h-3 rotate-180 shrink-0"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" d="M9 5 5 1 1 5" />
-              </svg>
-            </button>
-          </h2>
-          {showImage && (
-            <div
-              id="accordion-flush-body-1"
-              aria-labelledby="accordion-flush-heading-1"
-            >
-              <div className=" w-full py-5 border-b border-gray-200 dark:border-gray-700 mb-3">
-                <input
-                  className="block w-[30%] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none p-2"
-                  aria-describedby="file_input_help"
-                  id="file_input"
-                  type="file"
-                  accept="image/*"
-                  onChange={uploadImage}
-                />
-                <a
-                  href={datasource?.image_url}
-                  target="_blank"
-                  className="h-60 w-80 mt-4"
-                >
-                  <img
-                    src={datasource?.image_url}
-                    alt="diamond"
-                    className="h-60 w-80 mt-4"
-                  />
-                </a>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
+          {/* Image card */}
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <button type="button" onClick={() => setShowImage(!showImage)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50" aria-expanded={showImage}>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v9a2 2 0 01-2 2H9l-4 4v-4H5a2 2 0 01-2-2V5z" /></svg>
+                <span className="font-medium text-gray-900">Upload Image</span>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* upload video */}
-        <div
-          id="accordion-flush"
-          data-accordion="collapse"
-          data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          data-inactive-classes="text-gray-500"
-        >
-          <h2 id="accordion-flush-heading-1">
-            <button
-              type="button"
-              onClick={() => setShowVideo(!showVideo)}
-              className="flex items-center justify-between w-full py-5 font-medium cursor-pointer border-b border-gray-200 dark:border-gray-700 gap-3"
-              data-accordion-target="#accordion-flush-body-1"
-              aria-expanded="true"
-              aria-controls="accordion-flush-body-1"
-            >
-              <span>Upload Video</span>
-              <svg
-                data-accordion-icon
-                className="w-3 h-3 rotate-180 shrink-0"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" d="M9 5 5 1 1 5" />
-              </svg>
+              <svg className={`w-4 h-4 transition-transform ${showImage ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
             </button>
-          </h2>
-          {showVideo && (
-            <div
-              id="accordion-flush-body-1"
-              aria-labelledby="accordion-flush-heading-1"
-            >
-              <div className=" w-full py-5 border-b border-gray-200 dark:border-gray-700 mb-3">
-                <input
-                  className="block w-[30%] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none p-2"
-                  aria-describedby="file_input_help"
-                  id="file_input"
-                  type="file"
-                  accept="video/mp4,video/x-m4v,video/*"
-                  onChange={uploadVideo}
-                />
-                <video width="450" height="500" controls className="mt-2">
-                  <source
-                    src={datasource?.video_url}
-                    type="video/mp4"
-                  />
-                </video>
-                {/* <p className="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG or GIF (MAX. 800x400px).</p> */}
+            {showImage && (
+              <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-700">Select image</label>
+                <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="image_input" type="file" accept="image/*" onChange={uploadImage} />
+                {datasource?.image_url && (
+                  <a href={datasource.image_url} target="_blank" className="block">
+                    <img src={datasource.image_url} alt="diamond" className="mt-3 max-h-60 rounded border" />
+                  </a>
+                )}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* upload PDf */}
-        <div
-          id="accordion-flush"
-          data-accordion="collapse"
-          data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          data-inactive-classes="text-gray-500"
-        >
-          <h2 id="accordion-flush-heading-1">
-            <button
-              type="button"
-              onClick={() => setShowPdf(!showPdf)}
-              className="flex items-center justify-between w-full py-5 font-medium cursor-pointer border-b border-gray-200 dark:border-gray-700 gap-3"
-              data-accordion-target="#accordion-flush-body-1"
-              aria-expanded="true"
-              aria-controls="accordion-flush-body-1"
-            >
-              <span>Upload Pdf</span>
-              <svg
-                data-accordion-icon
-                className="w-3 h-3 rotate-180 shrink-0"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" d="M9 5 5 1 1 5" />
-              </svg>
-            </button>
-          </h2>
-          {showPdf && (
-            <div
-              id="accordion-flush-body-1"
-              aria-labelledby="accordion-flush-heading-1"
-            >
-              <div className=" w-full py-5 border-b border-gray-200 dark:border-gray-700 mb-3 flex flex-row items-center gap-4 justify-start">
-                <div>
-                  <input
-                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none p-2"
-                    aria-describedby="file_input_help"
-                    id="file_input"
-                    type="file"
-                    accept="application/pdf,image/*"
-                  />
-                </div>
-                <a
-                  href={datasource?.cert_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline pl-2"
-                >
-                  Open PDF in new tab
-                </a>
+          {/* Video card */}
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <button type="button" onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50" aria-expanded={showVideo}>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14" /><rect x="3" y="6" width="12" height="12" rx="2" ry="2" /></svg>
+                <span className="font-medium text-gray-900">Upload Video</span>
               </div>
-            </div>
-          )}
+              <svg className={`w-4 h-4 transition-transform ${showVideo ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            {showVideo && (
+              <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-700">Select video</label>
+                <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="video_input" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={uploadVideo} />
+                {datasource?.video_url && (
+                  <video controls className="mt-3 w-full max-w-full rounded border">
+                    <source src={datasource.video_url} type="video/mp4" />
+                  </video>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* PDF card */}
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <button type="button" onClick={() => setShowPdf(!showPdf)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50" aria-expanded={showPdf}>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-rose-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 14.25v-6.75a2.25 2.25 0 00-2.25-2.25h-10.5A2.25 2.25 0 004.5 7.5v9a2.25 2.25 0 002.25 2.25h4.757" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 8.25h6m-6 3h3M16.5 18.75l2.25 2.25 4.5-4.5" /></svg>
+                <span className="font-medium text-gray-900">Upload PDF</span>
+              </div>
+              <svg className={`w-4 h-4 transition-transform ${showPdf ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            {showPdf && (
+              <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-700">Select PDF</label>
+                <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="pdf_input" type="file" accept="application/pdf,image/*" />
+                {datasource?.cert_url && (
+                  <a href={datasource.cert_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800 underline mt-3">Open PDF in new tab</a>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
