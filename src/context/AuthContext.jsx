@@ -15,6 +15,28 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState(() => {
+    try {
+      const raw = localStorage.getItem('filters');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  async function fetchAndCacheFilters() {
+    try {
+      const response = await api.get('stonedata/filterData');
+      const { data, success } = response?.data || {};
+      if (!success) return;
+      const filterData = data || {};
+      localStorage.setItem('filters', JSON.stringify(filterData));
+      setFilters(filterData);
+    } catch (ex) {
+      // Non-blocking: show toast but don't break auth flow
+      toastError(ex.message || 'Failed to load filter data');
+    }
+  }
 
   useEffect(() => {
     // Check for existing session on mount
@@ -23,6 +45,13 @@ export function AuthProvider({ children }) {
       setUser(JSON.parse(savedUser));
     }
     setLoading(false);
+
+    // If logged in and filters missing, fetch once
+    const hasToken = Boolean(localStorage.getItem('token'));
+    const hasFilters = Boolean(localStorage.getItem('filters'));
+    if (hasToken && !hasFilters) {
+      fetchAndCacheFilters();
+    }
   }, []);
 
   const login = async (email, password) => {
@@ -50,21 +79,15 @@ export function AuthProvider({ children }) {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
 
+      // Fetch and cache filters right after successful login
+      await fetchAndCacheFilters();
+
       return { success: true };
     } catch(ex){
       toastError(ex.message || 'Invalid email or password');
       return { success: false, message: ex.message };
     }
   };
-
-//   {
-//     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoic2hpbHdhbnRhLmd1cHRhQG5hdmdyYWhhYS5jb20iLCJpYXQiOjE3NTc0OTc0OTAsImV4cCI6MTc1NzU4Mzg5MH0.-WbZutuU3QaHSGAp-t1qb8yNwhysHSScaBDgmWspz20",
-//     "user": {
-//         "id": 6,
-//         "name": "Shilwanta Gupta",
-//         "email": "shilwanta.gupta@navgrahaa.com"
-//     }
-// }
 
   const register = async (email, name, password) => {
     // Simulate API call
@@ -86,9 +109,6 @@ export function AuthProvider({ children }) {
         return { success: false, message: 'Invalid response from server' };
       }
 
-      // Persist and set user
-      // localStorage.setItem('token', token);
-      // localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
 
       return { success: true };
@@ -101,6 +121,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('filters');
+    localStorage.removeItem('token');
   };
 
   const value = {
@@ -109,6 +131,7 @@ export function AuthProvider({ children }) {
     logout,
     loading,
     register,
+    filters,
     isAuthenticated: !!user
   };
 

@@ -88,13 +88,13 @@ const DetailPage = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Stock detail
+            Stone Detail
           </h1>
           {/* <p className="text-gray-600">
             Here the description of diamond certificate
           </p> */}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-x-8 gap-y-6">
           <DetailRow label="TAG No / Demand ID" value={datasource?.tag_no} />
           <DetailRow label="Certificate Type" value={datasource?.lab} />
           <DetailRow label="Certificate No" value={datasource.certificate_no} />

@@ -46,7 +46,7 @@ const ErrorPage = () => {
             {getErrorDescription(errorCode)}
           </p>
           {errorMessage && errorMessage !== getErrorDescription(errorCode) && (
-            <p className="mt-2 text-sm text-gray-500 italic">
+            <p className="mt-2 text-sm text-gray-500 italic font-bold">
               &ldquo;{errorMessage}&rdquo;
             </p>
           )}

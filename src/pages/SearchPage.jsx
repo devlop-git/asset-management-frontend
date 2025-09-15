@@ -3,6 +3,7 @@ import api from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import FormPage from "./FormPage";
 import { toastError, toastSuccess } from "../utils/toast";
+import Modal from "../components/Modal";
 
 // const PAGE_SIZE = 50; // pagination handled client-side for now
 
@@ -10,11 +11,84 @@ export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [showFilter, setShowFilter] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [datasource, setDatasource] = useState([]);
-  const [filteredData, setFilterData] = useState({});
   const [filters, setFilters] = useState({});
   const navigate = useNavigate();
+
+  const formConfig = {
+    fields: [
+      {
+        id: "tagNo",
+        type: "text",
+        label: "TAG no/ Demand ID",
+        placeholder: "Enter your TAG no/ Demand ID"
+      },
+      {
+        id: "certificateType",
+        type: "select",
+        label: "Certificate Type",
+        placeholder: "Enter your Certificate type",
+        optionsFrom: "certificateType"
+      },
+      {
+        id: "stoneType",
+        type: "select",
+        label: "Stone Type",
+        placeholder: "Enter your Stone Type",
+        optionsFrom: "stoneType",
+      },
+      {
+        id: "shape",
+        type: "select",
+        label: "Shape",
+        required: false,
+        optionsFrom: "shape"
+      },
+      {
+        id: "color",
+        type: "select",
+        label: "Color",
+        required: false,
+        optionsFrom: "color"
+      },
+      {
+        id: "clarity",
+        type: "select",
+        label: "Clarity",
+        required: false,
+        optionsFrom: "clarity"
+      },
+      {
+        id: "cut",
+        type: "select",
+        label: "Cut",
+        required: false,
+        optionsFrom: "cut"
+      },
+      {
+        id: "polish",
+        type: "select",
+        label: "Polish",
+        required: false,
+        optionsFrom: "polish"
+      },
+      {
+        id: "symmetry",
+        type: "select",
+        label: "Symmetry",
+        required: false,
+        optionsFrom: "symmetry"
+      },
+      {
+        id: "fluorescence",
+        type: "select",
+        label: "Fluorescence",
+        required: false,
+        optionsFrom: "fluorescence"
+      }
+    ]
+  }
   
   // Initial fetch on load (once)
   useEffect(() => {
@@ -45,23 +119,6 @@ export default function SearchPage() {
     }
   };
 
-  // filter dropdown data
-  useEffect(() => { 
-    (async () => {
-      try {
-        const response = await api.get(
-          'stonedata/filterData'
-        );
-        const { data, success } = response?.data || {};
-        const filterData = data || {};
-        if (!success) return;
-        setFilterData(filterData);
-      } catch (ex) {
-        toastError(ex.message || 'Something went wrong');
-      }
-    })();
-  }, []);
-
   const totalPages = Math.ceil(datasource.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = datasource.slice(startIndex, startIndex + itemsPerPage);
@@ -85,6 +142,7 @@ export default function SearchPage() {
     setFilters(mergedFilters);
     setCurrentPage(1);
     await executeSearch({ term: searchTerm, activeFilters: mergedFilters });
+    setIsFilterOpen(false);
   };
 
   const handlePageChange = (page) => {
@@ -99,15 +157,14 @@ export default function SearchPage() {
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        <div className="flex flex-row justify-between">
-          <div className=" relative mb-6 w-[50%]">
+        <div className="flex flex-row justify-between items-end">
+          <div className=" relative mb-3 w-[50%]">
             <label className="block mb-2 text-sm font-medium ">
               Certificate Number
             </label>
             <input
               type="search"
               id="search"
-              // className="block w-[50%] p-4 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
               value={searchTerm}
               className="form-input block w-[50%]"
               placeholder="Enter certificate Number"
@@ -116,64 +173,40 @@ export default function SearchPage() {
             />
 
             <button
-              type="submit"
+              type="button"
               className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               onClick={handleSearch}
             >
               Search
             </button>
           </div>
-        </div>
-
-        <div
-          id="accordion-flush"
-          data-accordion="collapse"
-          data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          data-inactive-classes="text-gray-500"
-        >
-          <h2 id="accordion-flush-heading-1">
+          <div className="mb-6">
             <button
               type="button"
-              onClick={() => setShowFilter(!showFilter)}
-              className="flex items-center justify-between w-full py-5 font-medium cursor-pointer border-b border-gray-200 dark:border-gray-700 gap-3"
-              data-accordion-target="#accordion-flush-body-1"
-              aria-expanded="true"
-              aria-controls="accordion-flush-body-1"
+              onClick={() => setIsFilterOpen(true)}
+              className="inline-flex items-center gap-2 text-white bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
             >
-              <span>Filter</span>
-              <svg
-                data-accordion-icon
-                className="w-3 h-3 rotate-180 shrink-0"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" d="M9 5 5 1 1 5" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M7 12h10M10 18h4" />
               </svg>
+              Filter
             </button>
-          </h2>
-          {showFilter && (
-            <div
-              id="accordion-flush-body-1"
-              aria-labelledby="accordion-flush-heading-1"
-            >
-              <div className="py-5 border-b border-gray-200 dark:border-gray-700 mb-3">
-                {/* <p className="mb-2 text-gray-500 dark:text-gray-400">
-                  Filters will be showing here.
-                </p> */}
-                <FormPage onFilter={handleApplyFilters} onFilterChange={handleFilterChange} filterData={filteredData} />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
+        <Modal isOpen={isFilterOpen} title="Filter" onClose={() => setIsFilterOpen(false)}>
+          <FormPage 
+            onFilter={handleApplyFilters} 
+            onFilterChange={handleFilterChange} 
+            formConfig={formConfig}  
+          />
+        </Modal>
+
         {/* Results Info */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 mt-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 mt-2">
           <p className="text-gray-600">
             Showing {datasource.length === 0 ? 0 : startIndex + 1}-
-            {Math.min(startIndex + itemsPerPage, datasource.length)} of{" "}
-            {datasource.length} results
+            {Math.min(startIndex + itemsPerPage, datasource.length)} of {datasource.length} results
           </p>
 
           <div className="flex items-center space-x-2">
@@ -200,7 +233,7 @@ export default function SearchPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
+                  Image, Video, PDF
                 </th>
                 {headingList.map((item, index) => (
                   <th
@@ -217,41 +250,29 @@ export default function SearchPage() {
                 <tr
                   key={row?.id ?? rowIndex}
                   className="hover:bg-gray-50 transition-colors duration-150"
+                  onClick={() => navigate(`/detail/${row.CertificateNo}`, {state: {certificateNo: row.CertificateNo}})}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/detail/${row.CertificateNo}`, {state: {certificateNo: row.CertificateNo}})}
-                      className="text-black-600 hover:text-blue-800"
-                      title="View"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        className="w-5 h-5"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                        />
-                      </svg>
-                    </button>
+                  <td className="px-2 py-4 whitespace-nowrap text-sm flex gap-2">
+                    {[
+                      ["image", row.image_url],
+                      ["video", row.video_url],
+                      ["cert", row.cert_url],
+                    ].map(([type, url]) => (
+                      url ? (
+                        <svg key={type} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4 text-green-500">
+                          <path d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      ) : (
+                        <svg key={type} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4 text-red-600">
+                          <path d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )
+                    ))}
                   </td>
                   {headingList.map((colKey) => (
                     <td
                       key={colKey}
-                      className="px-4 py-2 whitespace-nowrap text-sm text-gray-900"
+                      className="px-4 py-2 whitespace-wrap text-sm text-gray-900"
                     >
                       {String(row?.[colKey] ?? "")}
                     </td>
@@ -265,27 +286,10 @@ export default function SearchPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
-            <div className="flex flex-1 justify-between sm:hidden">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between w-full">
               <div>
                 <p className="text-sm text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of{" "}
-                  <span className="font-medium">{totalPages}</span>
+                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
                 </p>
               </div>
               <div>

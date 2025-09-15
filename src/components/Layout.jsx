@@ -94,11 +94,16 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
-        <div className="border-t border-gray-200 p-3 mt-auto">
+        <div className="border-t border-gray-200 p-3 mt-auto bg-[#E0B86A] text-white font-semibold">
           {isAuthenticated ? (
             <div className="flex items-center justify-between">
-              {isSidebarOpen && <span className="text-sm text-gray-700 truncate">{user.name}</span>}
-              <button onClick={handleLogout} className="btn-secondary text-sm">Logout</button>
+              {isSidebarOpen && <span className="text-sm truncate capitalize">{user.name}</span>}
+              <button onClick={handleLogout} className="btn-secondary text-sm flex gap-3" title='Logout'>
+              {isSidebarOpen ? 'Logout' : undefined}
+              <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16">
+                <path stroke="currentColor" d="M4 8h11m0 0-4-4m4 4-4 4m-5 3H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h3"/>
+              </svg>
+              </button>
             </div>
           ) : (
             <Link to="/" className="btn-primary w-full text-center text-sm">Admin Login</Link>
@@ -165,7 +170,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Content area */}
-      <main className={`pt-6 px-4 sm:px-6 lg:px-8 ${contentPaddingLeft} sm:pt-8`}>
+      <main className={`pt-3 px-4 sm:px-6 lg:px-8 ${contentPaddingLeft} sm:pt-6`}>
         {/* spacer for mobile top bar */}
         <div className="sm:hidden h-14" />
         {children}
