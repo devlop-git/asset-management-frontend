@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import DetailPage from './pages/DetailPage';
 import Register from './pages/Register';
 import ErrorPage from './pages/ErrorPage';
+import Roles from './pages/Roles';
 
 function App() {
   return (
@@ -20,6 +21,11 @@ function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/error-400" element={<ErrorPage />} />
+          <Route path="/roles" element={
+            <Layout>
+              <Roles />
+            </Layout>
+          } />
           <Route path="/stock" element={
             <Layout>
               <SearchPage />

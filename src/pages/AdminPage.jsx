@@ -49,23 +49,35 @@ const formConfig = {
 
 export default function AdminPage() {
 const [datasource, setDatasource] = useState({
-  "stoneCount": 0,
+    "stoneCount": 0,
     "imageCount": 0,
     "videoCount": 0,
     "pdfCount": 0
 });
 const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+const getDashboard = async(activeFilters) => {
+  const queryParts = [];
+  try {
+    Object.entries(activeFilters || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && String(value).trim() !== "") {
+        queryParts.push(`${key}=${String(value)}`);
+      }
+    }); 
+    const url = queryParts.length > 0
+    ? `/stonedata/dashboard?${queryParts.join("&")}`
+    : '/stonedata/dashboard';
+    const response = await axiosClient.get(url);
+    const { data, success, message } = response?.data || {};
+    setDatasource(data);
+    if(!success)  throw new Error(message || 'Something went wrong');
+  } catch(ex){
+    toastError(ex.message);
+  }
+}
+
   useEffect(() => {
-    (async() => {
-      try {
-      const response = await axiosClient.get('/stonedata/dashboard');
-      const { data, success, message } = response?.data || {};
-      setDatasource(data);
-      if(!success)  throw new Error(message || 'Something went wrong');
-    } catch(ex){
-      toastError(ex.message);
-    }})()
+    getDashboard({})
   },[])
 
   const stats = [
@@ -170,9 +182,10 @@ const [isFilterOpen, setIsFilterOpen] = useState(false);
     console.log('Admin form changed', updatedValues);
   };
 
-  const handleApplyFilters = (formValues) => {
+  const handleApplyFilters = async (formValues) => {
     // Submit admin form values somewhere
-    console.log('Admin form submitted', formValues);
+    const mergedFilters = { ...(formValues || {}) };
+    await getDashboard(mergedFilters)
     setIsFilterOpen(false);
   };
 
@@ -224,13 +237,10 @@ const [isFilterOpen, setIsFilterOpen] = useState(false);
         />
       </Modal>
 
-      {/* Recent Activities */}
-      <div className="bg-white rounded-lg shadow-sm w-[50%] p-2 m-5">
-           {/* Additional admin content can go here */}
+      {datasource.stoneCount ? <div className="bg-white rounded-lg shadow-sm w-[50%] p-2 m-5">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Digital Assets Chart</h3>
            <Chart options={state} series={series} type="donut" height={320} />
-           </div>
-
+      </div> : null} 
     </div>
   );
 }

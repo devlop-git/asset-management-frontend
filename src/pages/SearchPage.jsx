@@ -93,7 +93,7 @@ export default function SearchPage() {
   // Initial fetch on load (once)
   useEffect(() => {
     executeSearch({ term: "", activeFilters: {} });
-  }, []);
+  }, [itemsPerPage]);
 
   // Manual search executor (called only on button clicks)
   const executeSearch = async ({ term, activeFilters }) => {
@@ -106,8 +106,8 @@ export default function SearchPage() {
         }
       });
       const url = queryParts.length > 0
-        ? `stonedata/search?${queryParts.join("&")}`
-        : `stonedata/search`;
+        ? `stonedata/search?pagesize=${itemsPerPage}&${queryParts.join("&")}`
+        : `stonedata/search?pagesize=${itemsPerPage}`;
       const response = await api.get(url);
       const { data, success, message } = response?.data || {};
       const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
@@ -223,6 +223,8 @@ export default function SearchPage() {
               <option value={10}>10</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
             </select>
           </div>
         </div>
@@ -232,13 +234,13 @@ export default function SearchPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Image, Video, PDF
                 </th>
                 {headingList.map((item, index) => (
                   <th
                     key={index}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     {item}
                   </th>
@@ -249,10 +251,10 @@ export default function SearchPage() {
               {paginatedData.map((row, rowIndex) => (
                 <tr
                   key={row?.id ?? rowIndex}
-                  className="hover:bg-gray-50 transition-colors duration-150"
+                  className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                   onClick={() => navigate(`/detail/${row.CertificateNo}`, {state: {certificateNo: row.CertificateNo}})}
                 >
-                  <td className="px-2 py-4 whitespace-nowrap text-sm flex gap-2">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm flex gap-6">
                     {[
                       ["image", row.image_url],
                       ["video", row.video_url],
@@ -284,7 +286,7 @@ export default function SearchPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {/* {totalPages > 1 && ( */}
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between w-full">
               <div>
@@ -341,7 +343,7 @@ export default function SearchPage() {
               </div>
             </div>
           </div>
-        )}
+        {/* )} */}
       </div>
     </div>
   );

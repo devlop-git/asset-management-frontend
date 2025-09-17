@@ -33,6 +33,8 @@ const DetailPage = () => {
         const { data, success, message } = response?.data || {};
         if (!success) throw new Error(message || 'Failed to fetch details');
         setDatasource(data);
+        data.image_url ? setShowImage(true) : setShowImage(false);
+        data.video_url ? setShowVideo(true) : setShowVideo(false);
       } catch (ex) {
         toastError(ex.message || 'Something went wrong');
       }
@@ -124,11 +126,11 @@ const DetailPage = () => {
               <div className="px-4 pb-4 pt-2 border-t border-gray-100">
                 <label className="block text-sm font-medium text-gray-700">Select image</label>
                 <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="image_input" type="file" accept="image/*" onChange={uploadImage} />
-                {datasource?.image_url && (
-                  <a href={datasource.image_url} target="_blank" className="block">
-                    <img src={datasource.image_url} alt="diamond" className="mt-3 max-h-60 rounded border" />
+                {datasource?.stonedata.image_url ? (
+                  <a href={datasource.stonedata.image_url} target="_blank" className="block">
+                    <img src={datasource.stonedata.image_url} alt="diamond" className="mt-3 max-h-60 rounded border" />
                   </a>
-                )}
+                ) : <Spinner />}
               </div>
             )}
           </div>
@@ -146,11 +148,11 @@ const DetailPage = () => {
               <div className="px-4 pb-4 pt-2 border-t border-gray-100">
                 <label className="block text-sm font-medium text-gray-700">Select video</label>
                 <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="video_input" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={uploadVideo} />
-                {datasource?.video_url && (
+                {datasource?.stonedata.video_url ? (
                   <video controls className="mt-3 w-full max-w-full rounded border">
-                    <source src={datasource.video_url} type="video/mp4" />
+                    <source src={datasource.stonedata.video_url} type="video/mp4" />
                   </video>
-                )}
+                ) : <Spinner />}
               </div>
             )}
           </div>
@@ -168,8 +170,8 @@ const DetailPage = () => {
               <div className="px-4 pb-4 pt-2 border-t border-gray-100">
                 <label className="block text-sm font-medium text-gray-700">Select PDF</label>
                 <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="pdf_input" type="file" accept="application/pdf,image/*" />
-                {datasource?.cert_url && (
-                  <a href={datasource.cert_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800 underline mt-3">Open PDF in new tab</a>
+                {datasource?.stonedata.cert_url && (
+                  <a href={datasource.stonedata.cert_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800 underline mt-3">Open PDF in new tab</a>
                 )}
               </div>
             )}
