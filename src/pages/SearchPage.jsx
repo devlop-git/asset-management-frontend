@@ -1,11 +1,83 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import api from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import FormPage from "./FormPage";
 import { toastError, toastSuccess } from "../utils/toast";
 import Modal from "../components/Modal";
 
-// const PAGE_SIZE = 50; // pagination handled client-side for now
+const formConfig = {
+  fields: [
+    {
+      id: "tagNo",
+      type: "text",
+      label: "TAG no/ Demand ID",
+      placeholder: "Enter your TAG no/ Demand ID"
+    },
+    {
+      id: "certificateType",
+      type: "select",
+      label: "Certificate Type",
+      placeholder: "Enter your Certificate type",
+      optionsFrom: "certificateType"
+    },
+    {
+      id: "stoneType",
+      type: "select",
+      label: "Stone Type",
+      placeholder: "Enter your Stone Type",
+      optionsFrom: "stoneType",
+    },
+    {
+      id: "shape",
+      type: "select",
+      label: "Shape",
+      required: false,
+      optionsFrom: "shape"
+    },
+    {
+      id: "color",
+      type: "select",
+      label: "Color",
+      required: false,
+      optionsFrom: "color"
+    },
+    {
+      id: "clarity",
+      type: "select",
+      label: "Clarity",
+      required: false,
+      optionsFrom: "clarity"
+    },
+    {
+      id: "cut",
+      type: "select",
+      label: "Cut",
+      required: false,
+      optionsFrom: "cut"
+    },
+    {
+      id: "polish",
+      type: "select",
+      label: "Polish",
+      required: false,
+      optionsFrom: "polish"
+    },
+    {
+      id: "symmetry",
+      type: "select",
+      label: "Symmetry",
+      required: false,
+      optionsFrom: "symmetry"
+    },
+    {
+      id: "fluorescence",
+      type: "select",
+      label: "Fluorescence",
+      required: false,
+      optionsFrom: "fluorescence"
+    }
+  ]
+}
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,90 +85,18 @@ export default function SearchPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [datasource, setDatasource] = useState([]);
+  const [totalCount, setTotal] = useState();
+  const [totalPages, setTotalPages] = useState();
   const [filters, setFilters] = useState({});
   const navigate = useNavigate();
-
-  const formConfig = {
-    fields: [
-      {
-        id: "tagNo",
-        type: "text",
-        label: "TAG no/ Demand ID",
-        placeholder: "Enter your TAG no/ Demand ID"
-      },
-      {
-        id: "certificateType",
-        type: "select",
-        label: "Certificate Type",
-        placeholder: "Enter your Certificate type",
-        optionsFrom: "certificateType"
-      },
-      {
-        id: "stoneType",
-        type: "select",
-        label: "Stone Type",
-        placeholder: "Enter your Stone Type",
-        optionsFrom: "stoneType",
-      },
-      {
-        id: "shape",
-        type: "select",
-        label: "Shape",
-        required: false,
-        optionsFrom: "shape"
-      },
-      {
-        id: "color",
-        type: "select",
-        label: "Color",
-        required: false,
-        optionsFrom: "color"
-      },
-      {
-        id: "clarity",
-        type: "select",
-        label: "Clarity",
-        required: false,
-        optionsFrom: "clarity"
-      },
-      {
-        id: "cut",
-        type: "select",
-        label: "Cut",
-        required: false,
-        optionsFrom: "cut"
-      },
-      {
-        id: "polish",
-        type: "select",
-        label: "Polish",
-        required: false,
-        optionsFrom: "polish"
-      },
-      {
-        id: "symmetry",
-        type: "select",
-        label: "Symmetry",
-        required: false,
-        optionsFrom: "symmetry"
-      },
-      {
-        id: "fluorescence",
-        type: "select",
-        label: "Fluorescence",
-        required: false,
-        optionsFrom: "fluorescence"
-      }
-    ]
-  }
   
   // Initial fetch on load (once)
   useEffect(() => {
-    executeSearch({ term: "", activeFilters: {} });
-  }, [itemsPerPage]);
+    executeSearch({ term: "", activeFilters: {}, page: 1 });
+  }, []);
 
   // Manual search executor (called only on button clicks)
-  const executeSearch = async ({ term, activeFilters }) => {
+  const executeSearch = useCallback(async ({ term, activeFilters, page = currentPage, pageSize = itemsPerPage }) => {
     try {
       const queryParts = [];
       if (term) queryParts.push(`certificate_no=${term}`);
@@ -106,31 +106,43 @@ export default function SearchPage() {
         }
       });
       const url = queryParts.length > 0
-        ? `stonedata/search?pagesize=${itemsPerPage}&${queryParts.join("&")}`
-        : `stonedata/search?pagesize=${itemsPerPage}`;
+        ? `stonedata/search?pageSize=${pageSize}&page=${page}&${queryParts.join("&")}`
+        : `stonedata/search?pageSize=${pageSize}&page=${page}`;
       const response = await api.get(url);
       const { data, success, message } = response?.data || {};
-      const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+      const payload = data;
+      let rows = [];
+      let total = 0;
+      let pages = 0;
+      if (Array.isArray(payload)) {
+        rows = payload;
+      } else if (payload && Array.isArray(payload.data)) {
+        rows = payload.data;
+        total = Number(payload.total) || 0;
+        pages = Number(payload.totalPages) || 0;
+      }
       if (!success) throw new Error(message || 'Failed to fetch data');
       setDatasource(Array.isArray(rows) ? rows : []);
+      if (total) setTotal(total);
+      if (pages) setTotalPages(pages);
       toastSuccess('Data fetched successfully');
     } catch (ex) {
       toastError(ex.message || 'Something went wrong');
     }
-  };
-
-  const totalPages = Math.ceil(datasource.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = datasource.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, itemsPerPage]);
+  const isLastPage = totalPages ? currentPage >= totalPages : (datasource.length < itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage + (datasource.length ? 1 : 0);
+  const endIndex = (currentPage - 1) * itemsPerPage + datasource.length;
 
   const headingList = useMemo(() => {
     if (!datasource || datasource.length === 0) return [];
-    return Object.keys(datasource[0]);
+    const excluded = new Set(["image_url", "video_url", "cert_url"]);
+    return Object.keys(datasource[0]).filter((key) => !excluded.has(key));
   }, [datasource]);
 
   const handleSearch = async () => {
     setCurrentPage(1);
-    await executeSearch({ term: searchTerm, activeFilters: filters });
+    await executeSearch({ term: searchTerm, activeFilters: filters, page: 1 });
   };
 
   const handleFilterChange = (updatedValues) => {
@@ -141,44 +153,42 @@ export default function SearchPage() {
     const mergedFilters = { ...(formValues || {}) };
     setFilters(mergedFilters);
     setCurrentPage(1);
-    await executeSearch({ term: searchTerm, activeFilters: mergedFilters });
+    await executeSearch({ term: searchTerm, activeFilters: mergedFilters, page: 1 });
     setIsFilterOpen(false);
   };
 
-  const handlePageChange = (page) => {
+  const handlePageChange = async (page) => {
+    if (page < 1) return;
     setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
+    await executeSearch({ term: searchTerm, activeFilters: filters, page });
   };
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-lg shadow-sm">
+      <div className="bg-white p-3 rounded-lg shadow-sm">
         <div className="flex flex-row justify-between items-end">
           <div className=" relative mb-3 w-[50%]">
-            <label className="block mb-2 text-sm font-medium ">
+            {/* <label className="block mb-2 text-sm font-medium ">
               Certificate Number
-            </label>
-            <input
-              type="search"
-              id="search"
-              value={searchTerm}
-              className="form-input block w-[50%]"
-              placeholder="Enter certificate Number"
-              onChange={(e) => setSearchTerm(e.target.value)}
-              required
-            />
-
-            <button
-              type="button"
-              className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              onClick={handleSearch}
-            >
-              Search
-            </button>
+            </label> */}
+            <div className="flex items-center gap-2">
+              <input
+                type="search"
+                id="search"
+                value={searchTerm}
+                className="form-input w-[50%]"
+                placeholder="Enter Certificate Number"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                onClick={handleSearch}
+              >
+                Search
+              </button>
+            </div>
           </div>
           <div className="mb-6">
             <button
@@ -202,13 +212,14 @@ export default function SearchPage() {
           />
         </Modal>
 
-        {/* Results Info */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 mt-2">
           <p className="text-gray-600">
-            Showing {datasource.length === 0 ? 0 : startIndex + 1}-
-            {Math.min(startIndex + itemsPerPage, datasource.length)} of {datasource.length} results
+            {totalCount ? (
+              <>Showing {startIndex} - {endIndex} of {totalCount}</>
+            ) : (
+              <>Showing {datasource.length} results on page {currentPage}</>
+            )}
           </p>
-
           <div className="flex items-center space-x-2">
             <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
               Per page:
@@ -216,23 +227,22 @@ export default function SearchPage() {
             <select
               id="itemsPerPage"
               value={itemsPerPage}
-              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-              className="form-select w-20"
+              onChange={async (e) => { const val = Number(e.target.value); setItemsPerPage(val); setCurrentPage(1); await executeSearch({ term: searchTerm, activeFilters: filters, page: 1, pageSize: val }); }}
+              className="form-select w-24"
             >
-              <option value={5}>5</option>
               <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
               <option value={100}>100</option>
-              <option value={200}>200</option>
+              <option value={500}>500</option>
+              <option value={1000}>1000</option>
+              <option value={2000}>2000</option>
             </select>
           </div>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Image, Video, PDF
@@ -248,7 +258,7 @@ export default function SearchPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedData.map((row, rowIndex) => (
+              {datasource.map((row, rowIndex) => (
                 <tr
                   key={row?.id ?? rowIndex}
                   className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
@@ -274,7 +284,7 @@ export default function SearchPage() {
                   {headingList.map((colKey) => (
                     <td
                       key={colKey}
-                      className="px-4 py-2 whitespace-wrap text-sm text-gray-900"
+                      className="px-2 py-2 whitespace-nowrap text-sm text-gray-900"
                     >
                       {String(row?.[colKey] ?? "")}
                     </td>
@@ -286,13 +296,10 @@ export default function SearchPage() {
         </div>
 
         {/* Pagination */}
-        {/* {totalPages > 1 && ( */}
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between w-full">
               <div>
-                <p className="text-sm text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
-                </p>
+                <p className="text-sm text-gray-700">Page <span className="font-medium">{currentPage}</span>{totalPages ? <> of <span className="font-medium">{totalPages}</span></> : null}</p>
               </div>
               <div>
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
@@ -305,36 +312,39 @@ export default function SearchPage() {
                   </button>
 
                   {/* Page numbers */}
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNumber;
-                    if (totalPages <= 5) {
-                      pageNumber = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNumber = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNumber = totalPages - 4 + i;
-                    } else {
-                      pageNumber = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <button
-                        key={pageNumber}
-                        onClick={() => handlePageChange(pageNumber)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors duration-200 ${
-                          currentPage === pageNumber
-                            ? "z-10 bg-primary-50 border-primary-500 text-primary-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pageNumber}
-                      </button>
-                    );
-                  })}
+                  {totalPages ? (
+                    (() => {
+                      const maxToShow = 5;
+                      let start = 1;
+                      let end = totalPages;
+                      if (totalPages > maxToShow) {
+                        if (currentPage <= 3) {
+                          start = 1; end = 5;
+                        } else if (currentPage >= totalPages - 2) {
+                          start = totalPages - 4; end = totalPages;
+                        } else {
+                          start = currentPage - 2; end = currentPage + 2;
+                        }
+                      }
+                      const buttons = [];
+                      for (let p = start; p <= end; p++) {
+                        buttons.push(
+                          <button
+                            key={p}
+                            onClick={() => handlePageChange(p)}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors duration-200 ${currentPage === p ? "z-10 bg-primary-50 border-primary-500 text-primary-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"}`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      }
+                      return buttons;
+                    })()
+                  ) : null}
 
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
+                    disabled={isLastPage}
                     className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
@@ -343,7 +353,6 @@ export default function SearchPage() {
               </div>
             </div>
           </div>
-        {/* )} */}
       </div>
     </div>
   );

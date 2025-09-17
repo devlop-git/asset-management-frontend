@@ -43,7 +43,7 @@ export default function Layout({ children }) {
   }, [isAuthenticated, location.pathname]);
 
   const sidebarWidthClass = isSidebarOpen ? 'w-64' : 'w-16';
-  const contentPaddingLeft = isSidebarOpen ? 'lg:pl-64' : 'lg:pl-16';
+  const contentPaddingLeft = isSidebarOpen ? 'lg:pl-68' : 'lg:pl-16';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -176,7 +176,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Content area */}
-      <main className={`pt-3 px-4 sm:px-6 lg:px-8 ${contentPaddingLeft} sm:pt-6`}>
+      <main className={`pt-3 px-4 sm:px-6 lg:px-6 ${contentPaddingLeft} sm:pt-6`}>
         {/* spacer for mobile top bar */}
         <div className="sm:hidden h-14" />
         {children}

@@ -93,7 +93,7 @@ export const Icon = ({ name, size = 24, color = 'currentColor', className = '', 
       height={size}
       className={className}
       fill={isStroke ? 'none' : color}
-      stroke={isStroke ? color : 'nolne'}
+      stroke={isStroke ? color : 'none'}
       strokeWidth={isStroke ? computedStrokeWidth : undefined}
       aria-hidden="true"
       {...props}
