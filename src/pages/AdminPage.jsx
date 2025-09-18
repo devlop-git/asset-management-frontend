@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { toastError } from "../utils/toast";
 import axiosClient from "../api/axiosClient";
 import FormPage from './FormPage';
-import Modal from "../components/Modal";
 import Chart from "react-apexcharts";
+import { Close } from './../assets/Icons';
 
 
 const formConfig = {
@@ -218,7 +218,7 @@ const getDashboard = async(activeFilters) => {
           <button
             type="button"
             onClick={() => setIsFilterOpen(true)}
-            className="inline-flex items-center gap-2 text-white bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
+            className="inline-flex items-center gap-2 text-white bg-[#E0B86A] hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M7 12h10M10 18h4" />
@@ -228,14 +228,21 @@ const getDashboard = async(activeFilters) => {
         </div>
       </div>
 
-      {/* Filter Modal */}
-      <Modal isOpen={isFilterOpen} title="Filter" onClose={() => setIsFilterOpen(false)}>
-        <FormPage 
-          onFilter={handleApplyFilters} 
-          onFilterChange={handleFilterChange} 
-          formConfig={formConfig}  
-        />
-      </Modal>
+      {isFilterOpen && (
+        <div className="mt-3 border border-gray-200 rounded-md bg-white mx-4">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-gray-700">Filters</h3>
+            <button className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer" onClick={() => setIsFilterOpen(false)}><Close /></button>
+          </div>
+          <div className="p-4">
+            <FormPage 
+              onFilter={handleApplyFilters} 
+              onFilterChange={handleFilterChange} 
+              formConfig={formConfig}  
+            />
+          </div>
+        </div>
+      )}
 
       {datasource.stoneCount ? <div className="bg-white rounded-lg shadow-sm w-[50%] p-2 m-5">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Digital Assets Chart</h3>
