@@ -3,7 +3,7 @@ import api from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import FormPage from "./FormPage";
 import { toastError, toastSuccess } from "../utils/toast";
-import Modal from "../components/Modal";
+import { Close } from "../assets/Icons";
 
 const formConfig = {
   fields: [
@@ -136,8 +136,8 @@ export default function SearchPage() {
         }
         if (!success) throw new Error(message || "Failed to fetch data");
         setDatasource(Array.isArray(rows) ? rows : []);
-        if (total) setTotal(total);
-        if (pages) setTotalPages(pages);
+        setTotal(total);
+        setTotalPages(pages);
         toastSuccess("Data fetched successfully");
       } catch (ex) {
         toastError(ex.message || "Something went wrong");
@@ -215,7 +215,7 @@ export default function SearchPage() {
           <div>
             <button
               type="button"
-              onClick={() => setIsFilterOpen(true)}
+              onClick={() => setIsFilterOpen((v) => !v)}
               className="inline-flex items-center gap-2 text-white bg-[#E0B86A] hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
             >
               <svg
@@ -232,22 +232,25 @@ export default function SearchPage() {
                   d="M4 6h16M7 12h10M10 18h4"
                 />
               </svg>
-              Filter
+              {isFilterOpen ? 'Hide Filters' : 'Filter'}
             </button>
           </div>
         </div>
-
-        <Modal
-          isOpen={isFilterOpen}
-          title="Filter"
-          onClose={() => setIsFilterOpen(false)}
-        >
-          <FormPage
-            onFilter={handleApplyFilters}
-            onFilterChange={handleFilterChange}
-            formConfig={formConfig}
-          />
-        </Modal>
+        {isFilterOpen && (
+          <div className="mt-3 border border-gray-200 rounded-md bg-white">
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700">Filters</h3>
+              <button className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer" onClick={() => setIsFilterOpen(false)}><Close /></button>
+            </div>
+            <div className="p-4">
+              <FormPage
+                onFilter={handleApplyFilters}
+                onFilterChange={handleFilterChange}
+                formConfig={formConfig}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Table */}
         <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -329,7 +332,7 @@ export default function SearchPage() {
             <div>
               {/* <p className="text-sm text-gray-700">Page <span className="font-medium">{currentPage}</span>{totalPages ? <> of <span className="font-medium">{totalPages}</span></> : null}</p> */}
               <p className="text-gray-600">
-                {totalCount ? (
+                {totalCount > 0 ? (
                   <>
                     Showing {startIndex} - {endIndex} of {totalCount}
                   </>
