@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axiosClient";
 import { useLocation, useParams } from "react-router-dom";
 import { toastError } from "../utils/toast";
-import { toastSuccess } from './../utils/toast';
+import { toastSuccess } from "./../utils/toast";
 import Spinner from "../components/Spinner";
 
 const DetailRow = ({ label, value }) => (
@@ -17,11 +17,23 @@ const DetailRow = ({ label, value }) => (
 const DetailPage = () => {
   const { state } = useLocation();
   const { id } = useParams();
-  const [datasource, setDatasource] = useState({});
+  const [mediaData, setMediaData] = useState([]);
   const [showImage, setShowImage] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
+  const [showStoneData, setShowStoneData] = useState(false);
+  const [showDfr, setShowDfr] = useState(true);
+  const [dfrData, setDfrData] = useState({});
+  const [stoneData, setStoneData] = useState();
 
+  const formatLabel = (key) => {
+    if (!key) return "";
+    return key
+      .split("_")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  };
 
   useEffect(() => {
     const payload = id || state?.certificateNo;
@@ -31,147 +43,431 @@ const DetailPage = () => {
           `stonedata/stone-details?certificate_no=${payload}`
         );
         const { data, success, message } = response?.data || {};
-        if (!success) throw new Error(message || 'Failed to fetch details');
-        setDatasource(data);
-        data.image_url ? setShowImage(true) : setShowImage(false);
-        data.video_url ? setShowVideo(true) : setShowVideo(false);
+        if (!success) throw new Error(message || "Failed to fetch details");
+        const excluded = new Set([
+          "id",
+          "created_at",
+          "updated_at",
+          "is_active",
+          "diamond_received_date",
+          "order_received_date",
+          "stonedata",
+        ]);
+        const picked = Object.fromEntries(
+          Object.entries(data).filter(([key]) => !excluded.has(key))
+        );
+        setDfrData(picked);
+
+        const stoneExcluded = new Set([
+          "id",
+          "created_at",
+          "updated_at",
+          "is_active",
+          "media",
+        ]);
+        const stonePicked = Object.fromEntries(
+          Object.entries(data.stonedata).filter(
+            ([key]) => !stoneExcluded.has(key)
+          )
+        );
+        setStoneData(stonePicked);
+        setMediaData(data.stonedata.media);
+
+        data.stonedata.media[0]?.image_url
+          ? setShowImage(true)
+          : setShowImage(false);
+        data.stonedata.media[0]?.video_url
+          ? setShowVideo(true)
+          : setShowVideo(false);
       } catch (ex) {
-        toastError(ex.message || 'Something went wrong');
+        toastError(ex.message || "Something went wrong");
       }
     })();
   }, []);
 
   async function uploadMedia(type, file) {
     const formdata = new FormData();
-    formdata.append('media', file);
-    formdata.append('type', type); // images, videos, pdf
-    formdata.append('diamond_code', datasource.certificate_no);
-    formdata.append('stone_id', datasource.id);
+    formdata.append("media", file);
+    formdata.append("type", type); // images, videos, pdf
+    formdata.append("diamond_code", stoneData.certificate_no);
+    formdata.append("stone_id", stoneData.id);
 
     try {
-      const response = await api.post(
-        `stonedata/upload-media`,
-        formdata,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = await api.post(`stonedata/upload-media`, formdata, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       const { success, message } = response?.data || {};
-      if (!success) throw new Error(message || 'Upload failed');
-      toastSuccess(message || 'Uploaded');
+      if (!success) throw new Error(message || "Upload failed");
+      toastSuccess(message || "Uploaded");
     } catch (err) {
-      toastError(err.message || 'Something went wrong');
+      toastError(err.message || "Something went wrong");
     }
-
   }
 
   const uploadImage = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      uploadMedia('images', file);
+      uploadMedia("images", file);
       // for preview purpose only
       const imageUrl = URL.createObjectURL(file);
-      setDatasource((prev) => ({ ...prev, image_url: imageUrl }));
+      setMediaData((prev) => ({ ...prev, image_url: imageUrl }));
     }
-  }
+  };
   const uploadVideo = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      uploadMedia('videos', file);
+      uploadMedia("videos", file);
       // for preview purpose only
       const videoUrl = URL.createObjectURL(file);
-      setDatasource((prev) => ({ ...prev, video_url: videoUrl }));
+      setMediaData((prev) => ({ ...prev, video_url: videoUrl }));
     }
-  } 
+  };
 
-  if(!datasource.tag_no) return <Spinner />
+  const DFRComponent = () => (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden my-6">
+      <button
+        type="button"
+        onClick={() => setShowDfr(!showDfr)}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+        aria-expanded={showDfr}
+      >
+        <div className="flex items-center gap-2">
+          <svg
+            className="w-5 h-5 text-purple-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+              d="M19.5 14.25v-6.75a2.25 2.25 0 00-2.25-2.25h-10.5A2.25 2.25 0 004.5 7.5v9a2.25 2.25 0 002.25 2.25h4.757"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+              d="M9 8.25h6m-6 3h3M16.5 18.75l2.25 2.25 4.5-4.5"
+            />
+          </svg>
+          <span className="font-medium text-gray-900">DFR Data</span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform ${
+            showDfr ? "rotate-180" : ""
+          }`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      {showDfr && (
+        <div className="m-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-x-8 gap-y-6">
+          {Object.entries(dfrData || {}).map(([key, value]) => (
+            <DetailRow key={key} label={formatLabel(key)} value={value} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const StoneComponent = () => (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden my-6">
+      <button
+        type="button"
+        onClick={() => setShowStoneData(!showStoneData)}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+        aria-expanded={showPdf}
+      >
+        <div className="flex items-center gap-2">
+          <svg
+            className="w-5 h-5 text-purple-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+              d="M19.5 14.25v-6.75a2.25 2.25 0 00-2.25-2.25h-10.5A2.25 2.25 0 004.5 7.5v9a2.25 2.25 0 002.25 2.25h4.757"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+              d="M9 8.25h6m-6 3h3M16.5 18.75l2.25 2.25 4.5-4.5"
+            />
+          </svg>
+          <span className="font-medium text-gray-900">Stone Data</span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform ${
+            showStoneData ? "rotate-180" : ""
+          }`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      {showStoneData && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-x-8 gap-y-6 p-3 border-t border-gray-100">
+          {Object.entries(stoneData || {}).map(([key, value]) => (
+            <DetailRow key={key} label={formatLabel(key)} value={value} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="mx-auto">
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Stone Detail
+            Stone Details
           </h1>
           {/* <p className="text-gray-600">
             Here the description of diamond certificate
           </p> */}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-x-8 gap-y-6">
-          <DetailRow label="TAG No / Demand ID" value={datasource?.tag_no} />
-          <DetailRow label="Certificate Type" value={datasource?.lab} />
-          <DetailRow label="Certificate No" value={datasource.certificate_no} />
-          <DetailRow label="Stone Type" value={datasource.stone_type} />
-          <DetailRow label="Shape" value={datasource.shape} />
-          <DetailRow label="Carat (Avg Wt)" value={datasource.carat} />
-          <DetailRow label="girdle" value={datasource.girdle} />
-          <DetailRow label="Color" value={datasource.color} />
-          <DetailRow label="Clarity" value={datasource.clarity} />
-          <DetailRow label="Cut" value={datasource.cut} />
-          <DetailRow label="Polish" value={datasource.polish} />
-          <DetailRow label="Symmetry" value={datasource.symmetry} />
-          <DetailRow label="Fluorescence" value={datasource.fluorescence} />
-          <DetailRow label="Intensity" value={datasource.intensity} />
-        </div>
+
+        {/* DFR Data */}
+        <DFRComponent />
+
+        {/* Stone Data */}
+        <StoneComponent />
+
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
           {/* Image card */}
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-            <button type="button" onClick={() => setShowImage(!showImage)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50" aria-expanded={showImage}>
+            <button
+              type="button"
+              onClick={() => setShowImage(!showImage)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+              aria-expanded={showImage}
+            >
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v9a2 2 0 01-2 2H9l-4 4v-4H5a2 2 0 01-2-2V5z" /></svg>
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M3 5a2 2 0 012-2h14a2 2 0 012 2v9a2 2 0 01-2 2H9l-4 4v-4H5a2 2 0 01-2-2V5z"
+                  />
+                </svg>
                 <span className="font-medium text-gray-900">Upload Image</span>
               </div>
-              <svg className={`w-4 h-4 transition-transform ${showImage ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showImage ? "rotate-180" : ""
+                }`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </button>
             {showImage && (
               <div className="px-4 pb-4 pt-2 border-t border-gray-100">
-                <label className="block text-sm font-medium text-gray-700">Select image</label>
-                <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="image_input" type="file" accept="image/*" onChange={uploadImage} />
-                {datasource?.stonedata.image_url ? (
-                  <a href={datasource.stonedata.image_url} target="_blank" className="block">
-                    <img src={datasource.stonedata.image_url} alt="diamond" className="mt-3 max-h-60 rounded border" />
+                <label className="block text-sm font-medium text-gray-700">
+                  Select image
+                </label>
+                <input
+                  className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2"
+                  id="image_input"
+                  type="file"
+                  accept="image/*"
+                  onChange={uploadImage}
+                />
+                {mediaData[0]?.image_url ? (
+                  <a
+                    href={mediaData[0]?.image_url}
+                    target="_blank"
+                    className="block"
+                  >
+                    <img
+                      src={mediaData[0]?.image_url}
+                      alt="diamond"
+                      className="mt-3 max-h-60 rounded border"
+                    />
                   </a>
-                ) : <Spinner />}
+                ) : (
+                  <Spinner />
+                )}
               </div>
             )}
           </div>
 
           {/* Video card */}
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-            <button type="button" onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50" aria-expanded={showVideo}>
+            <button
+              type="button"
+              onClick={() => setShowVideo(!showVideo)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+              aria-expanded={showVideo}
+            >
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14" /><rect x="3" y="6" width="12" height="12" rx="2" ry="2" /></svg>
+                <svg
+                  className="w-5 h-5 text-purple-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"
+                  />
+                  <rect x="3" y="6" width="12" height="12" rx="2" ry="2" />
+                </svg>
                 <span className="font-medium text-gray-900">Upload Video</span>
               </div>
-              <svg className={`w-4 h-4 transition-transform ${showVideo ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showVideo ? "rotate-180" : ""
+                }`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </button>
             {showVideo && (
               <div className="px-4 pb-4 pt-2 border-t border-gray-100">
-                <label className="block text-sm font-medium text-gray-700">Select video</label>
-                <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="video_input" type="file" accept="video/mp4,video/x-m4v,video/*" onChange={uploadVideo} />
-                {datasource?.stonedata.video_url ? (
-                  <video controls className="mt-3 w-full max-w-full rounded border">
-                    <source src={datasource.stonedata.video_url} type="video/mp4" />
+                <label className="block text-sm font-medium text-gray-700">
+                  Select video
+                </label>
+                <input
+                  className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2"
+                  id="video_input"
+                  type="file"
+                  accept="video/mp4,video/x-m4v,video/*"
+                  onChange={uploadVideo}
+                />
+                {mediaData[0]?.video_url ? (
+                  <video
+                    controls
+                    className="mt-3 w-full max-w-full rounded border"
+                  >
+                    <source src={mediaData[0]?.video_url} type="video/mp4" />
                   </video>
-                ) : <Spinner />}
+                ) : (
+                  <Spinner />
+                )}
               </div>
             )}
           </div>
 
           {/* PDF card */}
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-            <button type="button" onClick={() => setShowPdf(!showPdf)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50" aria-expanded={showPdf}>
+            <button
+              type="button"
+              onClick={() => setShowPdf(!showPdf)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+              aria-expanded={showPdf}
+            >
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-rose-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 14.25v-6.75a2.25 2.25 0 00-2.25-2.25h-10.5A2.25 2.25 0 004.5 7.5v9a2.25 2.25 0 002.25 2.25h4.757" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 8.25h6m-6 3h3M16.5 18.75l2.25 2.25 4.5-4.5" /></svg>
+                <svg
+                  className="w-5 h-5 text-rose-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M19.5 14.25v-6.75a2.25 2.25 0 00-2.25-2.25h-10.5A2.25 2.25 0 004.5 7.5v9a2.25 2.25 0 002.25 2.25h4.757"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M9 8.25h6m-6 3h3M16.5 18.75l2.25 2.25 4.5-4.5"
+                  />
+                </svg>
                 <span className="font-medium text-gray-900">Upload PDF</span>
               </div>
-              <svg className={`w-4 h-4 transition-transform ${showPdf ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showPdf ? "rotate-180" : ""
+                }`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </button>
             {showPdf && (
               <div className="px-4 pb-4 pt-2 border-t border-gray-100">
-                <label className="block text-sm font-medium text-gray-700">Select PDF</label>
-                <input className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2" id="pdf_input" type="file" accept="application/pdf,image/*" />
-                {datasource?.stonedata.cert_url && (
-                  <a href={datasource.stonedata.cert_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800 underline mt-3">Open PDF in new tab</a>
+                <label className="block text-sm font-medium text-gray-700">
+                  Select PDF
+                </label>
+                <input
+                  className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2"
+                  id="pdf_input"
+                  type="file"
+                  accept="application/pdf,image/*"
+                />
+                {mediaData[0]?.cert_url && (
+                  <a
+                    href={mediaData[0]?.cert_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-blue-600 hover:text-blue-800 underline mt-3"
+                  >
+                    Open PDF in new tab
+                  </a>
                 )}
               </div>
             )}
