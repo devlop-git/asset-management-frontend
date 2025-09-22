@@ -12,6 +12,8 @@ import DetailPage from './pages/DetailPage';
 import Register from './pages/Register';
 import ErrorPage from './pages/ErrorPage';
 import Roles from './pages/Roles';
+import Permissions from './pages/Permissions';
+import RolesAndPermissions from './pages/RolesAndPermission';
 
 function App() {
   return (
@@ -23,12 +25,30 @@ function App() {
           <Route path="/error-400" element={<ErrorPage />} />
           <Route path="/roles" element={
             <Layout>
-              <Roles />
+              <ProtectedRoute roles={["admin", "superadmin"]}>
+                <Roles />
+              </ProtectedRoute>
+            </Layout>
+          } />
+          <Route path="/permissions" element={
+            <Layout>
+              <ProtectedRoute roles={["admin", "superadmin"]}>
+                <Permissions />
+              </ProtectedRoute>
+            </Layout>
+          } />
+          <Route path="/roles-permissions" element={
+            <Layout>
+              <ProtectedRoute roles={["admin", "superadmin"]}>
+                <RolesAndPermissions />
+              </ProtectedRoute>
             </Layout>
           } />
           <Route path="/stock" element={
             <Layout>
-              <SearchPage />
+              <ProtectedRoute roles={["user", "admin", "superadmin"]}>
+                <SearchPage />
+              </ProtectedRoute>
             </Layout>
           } />
           <Route path="/detail/:id" element={

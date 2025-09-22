@@ -30,17 +30,41 @@ export default function Layout({ children }) {
          <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
     )
+    const PermissionIcon = (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+    </svg>)
+    const RolesPermissionIcon = (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+      <path d="M12 18s-1.5-2-3-2c-1.5 0-3 2-3 2v2h12v-2s-1.5-2-3-2c-1.5 0-3 2-3 2z"></path>
+      <circle cx="12" cy="18" r="3"></circle>
+      <path d="M12 15v-6m-3 3h6"></path>
+    </svg>)
 
     const items = [];
     if (isAuthenticated) {
-      items.push(
-        { name: 'Admin', href: '/admin', current: location.pathname === '/admin', icon: AdminIcon },
-        { name: 'Roles', href: '/roles', current: location.pathname === '/roles', icon: RoleIcon },
-        { name: 'Stock List', href: '/stock', current: location.pathname === '/stock', icon: StockIcon }
-      );
+      const roleName = String((user && user.role)).toLowerCase();
+
+      // User: only Admin and Stock List
+      if (roleName === 'user') {
+        items.push(
+          { name: 'Admin', href: '/admin', current: location.pathname === '/admin', icon: AdminIcon },
+          { name: 'Stock List', href: '/stock', current: location.pathname === '/stock', icon: StockIcon }
+        );
+      } else {
+        // Admin/Superadmin: show all
+        items.push(
+          { name: 'Admin', href: '/admin', current: location.pathname === '/admin', icon: AdminIcon },
+          { name: 'Roles', href: '/roles', current: location.pathname === '/roles', icon: RoleIcon },
+          { name: 'Permissions', href: '/permissions', current: location.pathname === '/permissions', icon: PermissionIcon },
+          { name: 'Roles Permissions', href: '/roles-permissions', current: location.pathname === '/roles-permissions', icon: RolesPermissionIcon },
+          { name: 'Stock List', href: '/stock', current: location.pathname === '/stock', icon: StockIcon }
+        );
+      }
     }
     return items;
-  }, [isAuthenticated, location.pathname]);
+  }, [isAuthenticated, location.pathname, user]);
 
   const sidebarWidthClass = isSidebarOpen ? 'w-64' : 'w-16';
   const contentPaddingLeft = isSidebarOpen ? 'lg:pl-68' : 'lg:pl-16';

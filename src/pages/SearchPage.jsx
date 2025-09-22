@@ -216,7 +216,7 @@ export default function SearchPage() {
             <button
               type="button"
               onClick={() => setIsFilterOpen((v) => !v)}
-              className="inline-flex items-center gap-2 text-white bg-[#E0B86A] hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
+              className="inline-flex items-center gap-2 text-white bg-[#E0B86A] hover:bg-orange-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
