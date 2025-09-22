@@ -3,6 +3,7 @@ import api from "../api/axiosClient";
 import { toastError, toastSuccess } from "../utils/toast";
 import { Add, CheckIcon, Close, Delete, Edit } from "../assets/Icons";
 import Modal from "./../components/Modal";
+import { useAuth } from "../context/AuthContext";
 
 const headingList = ["Username", "Status", "Action"];
 
@@ -83,6 +84,8 @@ const Roles = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [roleData, setRoleData] = useState({ name: "", status: true });
   const [editingRoleId, setEditingRoleId] = useState(null);
+  const { user } = useAuth();
+  const IsSuperAdmin = user.role.toLowerCase() === 'superadmin'
 
   const getRoles = async () => {
     try {
@@ -207,7 +210,7 @@ const Roles = () => {
                   </td>
                    <td className="px-4 py-2 whitespace-wrap text-sm text-gray-900 flex gap-3 cursor-pointer">
                      <Edit fill="green" onClick={() => handleEditClick(i)} />
-                    <Delete fill="red" onClick={() => handleDelete(i.id)} />
+                      {IsSuperAdmin && <Delete fill="red" onClick={() => handleDelete(i.id)} />}
                   </td>
                 </tr>
               ))}
