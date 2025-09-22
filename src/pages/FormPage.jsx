@@ -93,8 +93,8 @@ export default function FormPage(props) {
 
   return (
     <div className="mx-auto">
-      <div className="bg-white p-8 rounded-lg shadow-sm">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">       
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-3">       
           {formConfig.fields.map((field) => (
             <div key={field.id}>
               {field.type !== 'checkbox' && (
