@@ -1,12 +1,12 @@
-export default function Modal({ isOpen, title, onClose, children, footer }) {
+export default function Modal({ isOpen, title, onClose, children, footer, className='w-full' }) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-5xl mx-4">
+      <div className={`relative bg-white rounded-lg shadow-lg max-w-5xl mx-4 ${className}`}>
         <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h3 className="text-lg font-medium text-gray-900">{title}---</h3>
+          <h3 className="text-lg font-medium text-gray-900">{title}</h3>
           <button
             type="button"
             onClick={onClose}
