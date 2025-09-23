@@ -93,6 +93,8 @@ const Roles = () => {
       const { success, data, message } = response.data;
       setDatasource(data);
       if (!success) throw new Error(message || "Something went wrong");
+      const summarizedData = data.map(i => ({id: i.id, name: i.name}))
+      localStorage.setItem('roles', JSON.stringify(summarizedData));
     } catch (ex) {
       toastError(ex.message);
     }
