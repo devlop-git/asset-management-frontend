@@ -14,6 +14,7 @@ import ErrorPage from './pages/ErrorPage';
 import Roles from './pages/Roles';
 import Permissions from './pages/Permissions';
 import RolesAndPermissions from './pages/RolesAndPermission';
+import UserPage from './pages/UserPage';
 
 function App() {
   return (
@@ -27,6 +28,13 @@ function App() {
             <Layout>
               <ProtectedRoute roles={["admin", "superadmin"]}>
                 <Roles />
+              </ProtectedRoute>
+            </Layout>
+          } />
+           <Route path="/users" element={
+            <Layout>
+              <ProtectedRoute roles={["admin", "superadmin"]}>
+                <UserPage />
               </ProtectedRoute>
             </Layout>
           } />

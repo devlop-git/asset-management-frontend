@@ -41,6 +41,11 @@ export default function Layout({ children }) {
       <circle cx="12" cy="18" r="3"></circle>
       <path d="M12 15v-6m-3 3h6"></path>
     </svg>)
+    const UserIcon = (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>)
 
     const items = [];
     if (isAuthenticated) {
@@ -56,10 +61,11 @@ export default function Layout({ children }) {
         // Admin/Superadmin: show all
         items.push(
           { name: 'Admin', href: '/admin', current: location.pathname === '/admin', icon: AdminIcon },
+          { name: 'Stock List', href: '/stock', current: location.pathname === '/stock', icon: StockIcon },
+          { name: 'Users', href: '/users', current: location.pathname === '/users', icon: UserIcon },
           { name: 'Roles', href: '/roles', current: location.pathname === '/roles', icon: RoleIcon },
           { name: 'Permissions', href: '/permissions', current: location.pathname === '/permissions', icon: PermissionIcon },
           { name: 'Roles Permissions', href: '/roles-permissions', current: location.pathname === '/roles-permissions', icon: RolesPermissionIcon },
-          { name: 'Stock List', href: '/stock', current: location.pathname === '/stock', icon: StockIcon }
         );
       }
     }

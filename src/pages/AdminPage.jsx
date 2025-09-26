@@ -217,13 +217,13 @@ const getDashboard = async(activeFilters) => {
         <div className="ml-4">
           <button
             type="button"
-            onClick={() => setIsFilterOpen(true)}
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
             className="inline-flex items-center gap-2 text-white bg-[#E0B86A] hover:bg-orange-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M7 12h10M10 18h4" />
             </svg>
-            Filter
+            {isFilterOpen ? 'Hide Filters' : 'Filter'}
           </button>
         </div>
       </div>
@@ -243,11 +243,17 @@ const getDashboard = async(activeFilters) => {
           </div>
         </div>
       )}
-
-      {datasource.stoneCount ? <div className="bg-white rounded-lg shadow-sm w-[50%] p-2 m-5">
+      <div className="flex justify-center gap-1">
+      {datasource.stoneCount ? <div className="bg-white rounded-lg shadow-sm w-[100%] p-2 m-2">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Digital Assets Chart</h3>
            <Chart options={state} series={series} type="donut" height={320} />
       </div> : null} 
+{/* 
+      {datasource.stoneCount ? <div className="bg-white rounded-lg shadow-sm w-[50%] p-2 m-2">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Digital Assets Chart</h3>
+           <Chart options={barState} series={barState.series} type="bar" height={320} />
+      </div> : null}  */}
+      </div>
     </div>
   );
 }

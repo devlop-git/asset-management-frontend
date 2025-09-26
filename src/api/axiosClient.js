@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL is read from Vite env; define VITE_API_BASE_URL in .env files
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://api.assets.nevejewels.com/';
+const baseURL = import.meta.env.VITE_MODE === 'dev' ? import.meta.env.VITE_API_BASE_URL : import.meta.env.VITE_API_PROD_URL;
 console.log('baseURL', baseURL);
 // Create axios instance
 const axiosClient = axios.create({
