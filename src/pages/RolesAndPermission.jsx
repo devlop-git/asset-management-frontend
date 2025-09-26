@@ -14,7 +14,8 @@ const Heading = ({
   data,
   setData,
   handleSave,
-  roleList
+  roleList,
+  permissions
 }) => (
   <div className="flex justify-between">
     <div className="relative mb-3 w-[50%] flex gap-5">
@@ -39,9 +40,9 @@ const Heading = ({
       className="w-[30%]"
     >
       <div>
-         <label htmlFor="countries" className="block mb-2 text-sm font-medium text-gray-900">Select a role</label>
+         <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900">Select a role</label>
           <select 
-            id="countries" 
+            id="role" 
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             onChange={(e) => setData(prev =>( {...prev, role: e.target.value}))} 
             value={data.role || ""}
@@ -49,21 +50,18 @@ const Heading = ({
           <option value="">Choose a Role</option>
           {roleList?.map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
         </select>
-        <label className="block mb-2 text-sm font-medium text-gray-900">
-          URL
-        </label>
-        <input
-          className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none p-2"
-          id="url_input"
-          type="text"
-          value={data.url}
-          placeholder="Enter URL"
-          onChange={(e) =>
-            setData((prev) => ({ ...prev, url: e.target.value }))
-          }
-        />
-       
-            </div>
+
+        <label htmlFor="permission" className="block mb-2 text-sm font-medium text-gray-900">Select a Permission</label>
+          <select 
+            id="permission" 
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            onChange={(e) => setData(prev =>( {...prev, url: e.target.value}))} 
+            value={data.url || ""}
+          >
+            <option value="">Choose a Permission</option>
+            {permissions?.map(i => <option value={i.id} key={i.id}>{i.url}</option>)}
+          </select>
+      </div>
     </Modal>
     <div className="mb-2">
       <button
@@ -80,6 +78,7 @@ const Heading = ({
 
 const RolesAndPermissions = () => {
   const [datasource, setDatasource] = useState([]);
+  const [permissions, setPermissions] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [payload, setData] = useState({ role: "", url: '' });
   const [editingRoleId, setEditingRoleId] = useState(null);
@@ -106,11 +105,10 @@ const RolesAndPermissions = () => {
   };
 
   const handleAdd = async () => {
-
     try {
       const response = await api.post(`role-permissions`, {
         roleId: payload.role,
-        permissionId: payload.permission,
+        permissionId: payload.url,
       });
       const { success, message, data } = response.data;
       if (!success) throw new Error(message);
@@ -125,9 +123,9 @@ const RolesAndPermissions = () => {
 
   const handleUpdate = async () => {
     try {
-      const response = await api.post(`role-permissions/${editingRoleId}`, {
-        roleId: data.role,
-        permissionId: data.url
+      const response = await api.put(`role-permissions/${editingRoleId}`, {
+        roleId: payload.role,
+        permissionId: payload.url
       });
       const { success, message, data } = response.data;
       if (!success) throw new Error(message);
@@ -156,6 +154,18 @@ const RolesAndPermissions = () => {
 
   useEffect(() => {
     getData();
+    (async () => {
+      try {
+        const response = await api.get('/permissions');
+        const { success, data, message } = response.data;
+        const permissionData = data.map(i => ({id: i.id, url: i.url}))
+        setPermissions(permissionData);
+        if (!success) throw new Error(message || "Something went wrong");
+        toastSuccess(message)
+      } catch(ex) {
+        toastError(ex.message)
+      }
+    })();
   }, []);
 
   const TableHeader = ({ headingList }) => (
@@ -189,6 +199,7 @@ const RolesAndPermissions = () => {
           }}
           data={payload}
           roleList={roleList}
+          permissions={permissions}
           setData={setData}
           handleSave={editingRoleId ? handleUpdate : handleAdd}
         /><div className="overflow-x-auto">

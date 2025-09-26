@@ -20,7 +20,7 @@ const DetailPage = () => {
   const [mediaData, setMediaData] = useState([]);
   const [showImage, setShowImage] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const [showPdf, setShowPdf] = useState(false);
+  const [showPdf, setShowPdf] = useState(true);
   const [showStoneData, setShowStoneData] = useState(false);
   const [showDfr, setShowDfr] = useState(true);
   const [dfrData, setDfrData] = useState({});

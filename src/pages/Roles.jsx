@@ -125,7 +125,7 @@ const Roles = () => {
 
   const handleUpdate = async () => {
     try {
-      const response = await api.post(`role/${editingRoleId}`, {
+      const response = await api.put(`role/${editingRoleId}`, {
         name: roleData.name,
         status: roleData.status ? 1 : 0,
       });

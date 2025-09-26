@@ -66,7 +66,7 @@ function App() {
           {/* Catch-all route for unmatched paths */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+        <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
       </Router>
     </AuthProvider>
   );
